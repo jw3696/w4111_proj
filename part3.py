@@ -10,13 +10,14 @@ def hello():
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask import Flask, request, render_template, g, redirect, Response, session, abort,flash
+#from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
-login_manager = LoginManager()
-login_manager.init_app(app)
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+#login_manager = LoginManager()
+#login_manager.init_app(app)
 
 DB_USER = "hz2562"
 DB_PASSWORD = "dp99rrq9"
@@ -68,7 +69,6 @@ def index():
 	for result in cursor:
 		names.append('Winery: %s , Grape: %s'%(result['winery'],result['grapetype']))  # can also be accessed using result[0]
 	cursor.close()
-	print(names)
 
 	context = dict(data = names)
 	return render_template("index.html", **context)
@@ -84,7 +84,7 @@ def addUser():
 		g.conn.execute('INSERT INTO testUser(name,password) VALUES (\'%s\',\'%s\')'% (name,psw));
 		print("Successfully signed up")
 	except:
-		print("invalid user name")
+		flash("invalid user name")
 
 	return redirect('/')
 
@@ -92,10 +92,10 @@ def addUser():
 def another():
   return render_template("signup.html")
 
-
+'''
 @login_manager.user_loader
 def load_user(user_id):
-	uid =  g.conn.execute("SELECT id FROM testUser")
+	uid =  g.conn.execute("SELECT * FROM testUser WHERE id = user_id")
 	return uid
 
 @app.route('/logout')
@@ -109,4 +109,5 @@ def logout():
 @login_required
 def dashboard():
 	return render_template('userpage.html', name=current_user.username)
+'''
 
