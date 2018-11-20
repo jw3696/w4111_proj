@@ -82,32 +82,35 @@ def addUser():
 	#cmd = 'INSERT INTO testUser VALUES (:name)';
 	try:
 		g.conn.execute('INSERT INTO testUser(name,password) VALUES (\'%s\',\'%s\')'% (name,psw));
-		print("Successfully signed up")
 	except:
-		flash("invalid user name")
+		flash("User name already exist")
+		return redirect('/signup')
 
 	return redirect('/')
 
 @app.route('/signup')
-def another():
-  return render_template("signup.html")
+def signup():
+	return render_template("signup.html")
 
-'''
-@login_manager.user_loader
-def load_user(user_id):
-	uid =  g.conn.execute("SELECT * FROM testUser WHERE id = user_id")
-	return uid
+username = None
+login = False
 
-@app.route('/logout')
-@login_required
-def logout():
-	logout_user()
-	return redirect('/')
+@app.route('/login')
+def login():
+	name = request.form['name']
+	psw = request.form['psw']
+	try:
+		g.conn.execute('SELECT * FROM testUser WHERE name=\'%s\', password = \'%s\''%(name, psw))
+		username = name
+		login = True
+	except:
+		flash('invalid username or password')
 
-## TODO: add userpage.html ##
-@app.route('/userpage')
-@login_required
-def dashboard():
-	return render_template('userpage.html', name=current_user.username)
-'''
+
+@app.route('/user/<id>')
+def user(id):
+	if !login:
+		redirect('/login')
+
+
 
