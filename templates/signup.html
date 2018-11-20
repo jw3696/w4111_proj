@@ -10,6 +10,10 @@
 <body>
   <h1>Please enter you user name and password</h1>
 
+{% if error %}
+    <p class=error><strong>Error:</strong> {{ error }}
+{% endif %}
+
 <form method="POST" action="/addUser">
 <p>Username: <input type="text" name="name"> </p>
 <p>Password: <input type="password" name="psw"> <input type="submit" value="Sign Up"></p>
