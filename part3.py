@@ -11,9 +11,12 @@ import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 DB_USER = "hz2562"
 DB_PASSWORD = "dp99rrq9"
@@ -49,11 +52,23 @@ def teardown_request(exception):
 def index():
 	print(request.args)
 
-	cursor = g.conn.execute("SELECT name FROM test")
+	cursor = g.conn.execute("WITH PopWine(wid) AS (SELECT wid \
+	FROM UserWishWine WW WHERE wid IN \
+		(SELECT wid \
+		FROM Review U \
+		GROUP BY wid \
+		HAVING AVG(U.point) > 80) \
+	GROUP BY wid \
+	ORDER BY COUNT(uid) DESC \
+	LIMIT 10) \
+	SELECT winery, grapeType \
+	FROM (PopWine P JOIN Wine W ON P.wid = W.wid) AS PW JOIN Location L \
+	ON PW.lid = L.lid;")
 	names = []
 	for result in cursor:
-		names.append(result['name'])  # can also be accessed using result[0]
+		names.append('Winery: %s , Grape: %s'%(result['winery'],result['grapetype']))  # can also be accessed using result[0]
 	cursor.close()
+	print(names)
 
 	context = dict(data = names)
 	return render_template("index.html", **context)
@@ -64,7 +79,7 @@ def addUser():
 	psw = request.form['psw']
 	print(name)
 	print(psw)
-	#cmd = 'INSERT INTO testUser VALUES (:name),(:psw)';
+	#cmd = 'INSERT INTO testUser VALUES (:name)';
 	try:
 		g.conn.execute('INSERT INTO testUser(name,password) VALUES (\'%s\',\'%s\')'% (name,psw));
 		print("Successfully signed up")
@@ -76,3 +91,22 @@ def addUser():
 @app.route('/signup')
 def another():
   return render_template("signup.html")
+
+
+@login_manager.user_loader
+def load_user(user_id):
+	uid =  g.conn.execute("SELECT id FROM testUser")
+	return uid
+
+@app.route('/logout')
+@login_required
+def logout():
+	logout_user()
+	return redirect('/')
+
+## TODO: add userpage.html ##
+@app.route('/userpage')
+@login_required
+def dashboard():
+	return render_template('userpage.html', name=current_user.username)
+
