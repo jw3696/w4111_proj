@@ -90,7 +90,25 @@ def addUser():
 
 @app.route('/signup')
 def another():
-  return render_template("signup.html")
+ 	return render_template("signup.html")
+
+@app.route('/wineInfo')
+def wineInfo():
+	return render_template("wineInfo.html")
+
+@app.route('/search')
+def search():
+	return render_template("search.html")
+
+@app.route('/noWine')
+def noWine():
+	return render_template("noWine.html")
+
+@app.route('/addWine')
+def addWine():
+	return render_template("addWine.html")
+
+
 
 '''
 @login_manager.user_loader
