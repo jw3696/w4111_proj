@@ -11,7 +11,6 @@ import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response, session, abort,flash
-#from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -78,6 +77,11 @@ def index():
 	context = dict(data = names)
 	return render_template("index.html", **context)
 
+
+@app.route('/signup')
+def signup():
+	return render_template("signup.html")
+
 @app.route('/addUser', methods=['POST'])
 def addUser():
 	name = request.form['name']
@@ -90,11 +94,6 @@ def addUser():
 		return redirect('/signup')
 
 	return redirect('/')
-
-@app.route('/signup')
-
-def signup():
-	return render_template("signup.html")
 
 
 
@@ -111,6 +110,7 @@ def loginU():
 		uid = []
 		for result in userid:
 			uid.append(result['id'])
+		userid.close()
 		global loginV
 		loginV = True
 		print("I'm here")
@@ -126,14 +126,21 @@ def user(uid):
 	print(loginV)
 	if not loginV:
 		return redirect('/login')
+
 	username = g.conn.execute('SELECT name FROM testUser WHERE id = \'%s\''%(uid))
 	name = []
 	for user in username:
 		name.append(user['name'])
-	return render_template("user.html", name=name[0])
+	username.close()
 
-def another():
- 	return render_template("signup.html")
+	wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = \'%s\''%(uid))
+	wine = []
+	for item in wished:
+		wine.append('Wine #%s'%(item['wid']))
+	wished.close()
+	context = dict(data = wine)
+
+	return render_template("user.html", name=name[0], **context)
 
 @app.route('/wineInfo')
 def wineInfo():
@@ -150,6 +157,8 @@ def noWine():
 @app.route('/addWine')
 def addWine():
 	return render_template("addWine.html")
+
+
 
 
 
