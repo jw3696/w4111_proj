@@ -158,6 +158,62 @@ def noWine():
 def addWine():
 	return render_template("addWine.html")
 
+@app.route('/findWine', methods=['POST'])
+def findWine():
+	print("here")
+	grapetype = request.form['grape_type']
+	winery = request.form['winery']
+	country = request.form['country']
+	province = request.form['province']
+	region1 = request.form['region1']
+	region2 = request.form['region2']
+	vinyard = request.form['vinyard']
+
+	constaints = []
+	if winery != '':
+		constaints.append('winery = ' + winery)
+	if country != '':
+		constaints.append('country = ' + country)
+	if province != '':
+		constaints.append('province = ' + province)
+	if region1 != '':
+		constaints.append('region1 = ' + region1)
+	if region2 != '':
+		constaints.append('region2 = ' + region2)
+	if vinyard != '':
+		constaints.append('vinyard = ' + vinyard)
+
+	# the with query 
+	query = 'SELECT lid FROM Location'
+	if len(constaints) != 0:
+		query = query + ' WHERE'
+		for s in constaints:
+			query = query + ' ' + s + ' AND'
+		query = query[0:len(query)-4]
+	query = "WITH loc AS (" + query + ") "
+
+	# append the find query
+	query = query + "SELECT wid FROM wine AS w JOIN loc AS l ON w.lid = l.lid"
+
+	if grapetype != '':
+		query = query + " WHERE w.grapeType = " + grapetype
+
+	query = query + " LIMIT 20"
+
+	# execute the query
+	valid_wine = g.conn.execute(query)
+	wine = []
+	for item in valid_wine:
+		wine.append('Wine #%s'%(item['wid']))
+	valid_wine.close()
+	context = dict(data = wine)
+
+	return render_template("searchResult.html", **context)
+
+#@app.route('')
+
+
+
 
 
 

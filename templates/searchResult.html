@@ -9,9 +9,7 @@
   </style>
 
 {% block body %}
-  <h1>Hi, {{name}}</h1>
-
-  <div>Here's a list of wines you wished</div>
+  <div>Here's a list of wines you asked for...</div>
 
    {% for item in data %}
       <div>{{item}}</div>
@@ -23,5 +21,8 @@
 {% endif %}
 
 {% endblock %}
+
+  <p> Did not find the one your are looking for? What about adding it? </p>
+  <p><a href="/addWine">Add Wine</a></p>
 
 </html>
