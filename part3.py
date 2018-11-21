@@ -24,6 +24,9 @@ DB_PASSWORD = "dp99rrq9"
 DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 DATABASEURI = "postgresql://"+DB_USER+":"+DB_PASSWORD+"@"+DB_SERVER+"/w4111"
 
+#username = None
+loginV = False
+
 engine = create_engine(DATABASEURI)
 
 #engine.execute("""DROP TABLE IF EXISTS test;""")
@@ -32,6 +35,8 @@ engine = create_engine(DATABASEURI)
 
 engine.execute("""DROP TABLE IF EXISTS testUser;""")
 engine.execute("""CREATE TABLE IF NOT EXISTS testUser ( id serial, name text UNIQUE, password text );""")
+engine.execute("""INSERT INTO testUser(name,password) VALUES ('user','pass');""")
+
 
 @app.before_request
 def before_request():
@@ -77,8 +82,6 @@ def index():
 def addUser():
 	name = request.form['name']
 	psw = request.form['psw']
-	print(name)
-	print(psw)
 	#cmd = 'INSERT INTO testUser VALUES (:name)';
 	try:
 		g.conn.execute('INSERT INTO testUser(name,password) VALUES (\'%s\',\'%s\')'% (name,psw));
@@ -93,25 +96,41 @@ def addUser():
 def signup():
 	return render_template("signup.html")
 
-username = None
-login = False
+
 
 @app.route('/login')
 def login():
+	return render_template("login.html")
+
+@app.route('/loginU', methods=['POST'])
+def loginU():
 	name = request.form['name']
 	psw = request.form['psw']
 	try:
-		g.conn.execute('SELECT * FROM testUser WHERE name=\'%s\', password = \'%s\''%(name, psw))
-		username = name
-		login = True
+		userid = g.conn.execute('SELECT id FROM testUser WHERE name=\'%s\' AND password = \'%s\''%(name, psw))
+		uid = []
+		for result in userid:
+			uid.append(result['id'])
+		global loginV
+		loginV = True
+		print("I'm here")
+		print(uid)
 	except:
 		flash('invalid username or password')
+		return redirect('/login')
+	return redirect('/user/%s'%uid[0])
 
 
-@app.route('/user/<id>')
-def user(id):
-	if !login:
-		redirect('/login')
+@app.route('/user/<uid>')
+def user(uid):
+	print(loginV)
+	if not loginV:
+		return redirect('/login')
+	username = g.conn.execute('SELECT name FROM testUser WHERE id = \'%s\''%(uid))
+	name = []
+	for user in username:
+		name.append(user['name'])
+	return render_template("user.html", name=name[0])
 
 def another():
  	return render_template("signup.html")
