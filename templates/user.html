@@ -11,6 +11,13 @@
 {% block body %}
   <h1>Hi, {{name}}</h1>
 
+  <div>Here's a list of wines you wished</div>
+
+   {% for item in data %}
+   		<div>{{item}}</div>
+    	<!--<div><a href="/wineInfo">{{item}}</a></div>-->
+   {% endfor %}
+
 {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
 {% endif %}
