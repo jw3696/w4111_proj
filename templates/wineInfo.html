@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+{% block body %}
+  <div>Here is the info of the wine...</div>
+
+   {% for item in data %}
+      <div>{{item}}</div>
+   {% endfor %}
+
+{% if error %}
+    <p class=error><strong>Error:</strong> {{ error }}
+{% endif %}
+    <p><a href="/">Back to mainpage</a><a href="/search">Back to search page</a></p>
+{% endblock %}
+  
+</html>

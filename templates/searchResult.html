@@ -12,17 +12,23 @@
   <div>Here's a list of wines you asked for...</div>
 
    {% for item in data %}
-      <div>{{item}}</div>
-      <!--<div><a href="/wineInfo">{{item}}</a></div>-->
+      <!---<div>{{item}} 
+        <c:url var="wineInfo" value="/wineInfo">
+          <c:param name="item" value={{item}} />
+        </c:url>
+        <a href="${wineInfo}">Detail..</a>
+      </div>
+      --->
+      <div>{{item}} <a href="/wineInfo/{{item}}">Detail</a></div>
    {% endfor %}
 
 {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
 {% endif %}
 
+<p> Did not find the one your are looking for? What about adding it? </p>
+<p><a href="/addWine">Add Wine</a></p>
+
 {% endblock %}
-
-  <p> Did not find the one your are looking for? What about adding it? </p>
-  <p><a href="/addWine">Add Wine</a></p>
-
+  
 </html>

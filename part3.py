@@ -143,7 +143,58 @@ def user(uid):
 	return render_template("user.html", name=name[0], **context)
 
 @app.route('/wineInfo')
-def wineInfo():
+def wineInfo(item):
+	query = "WITH onlyUser AS (SELECT * FROM wine WHERE wid = " + item[6:] + ") "
+	query = query + "SELECT * FROM onlyUser AS o JOIN Location AS l ON l.lid = o.lid"
+
+	# execute the query
+	valid_wine = g.conn.execute(query)
+	wine = []
+	for item in valid_wine:
+		wineInfoString = 'Wine #%s:\n'%(item['wid'])
+		wineInfoString = wineInfoString + "Grape type: "+ item['grapetype'] + "\n"
+
+		# country
+		if item['country'] is not None:
+			wineInfoString = wineInfoString + "Country: " + item['country'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Country: -\n"
+
+		# province
+		if item['province'] is not None:
+			wineInfoString = wineInfoString + "Province: " + item['province'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Province: -\n"
+
+		# region1
+		if item['region1'] is not None:
+			wineInfoString = wineInfoString + "Sub-region1: " + item['region1'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Sub-region1: -\n"
+
+		# region2
+		if item['region2'] is not None:
+			wineInfoString = wineInfoString + "Sub-region2: " + item['region2'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Sub-region2: -\n"
+
+		# winery
+		if item['winery'] is not None:
+			wineInfoString = wineInfoString + "Winery: " + item['winery'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Winery: -\n"
+
+		# vinyard
+		if item['vinyard'] is not None:
+			wineInfoString = wineInfoString + "Vinyard: " + item['vinyard'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Vinyard: -\n"
+
+		wine.append(wineInfoString)
+
+	valid_wine.close()
+	context = dict(data = wine)
+
 	return render_template("wineInfo.html")
 
 @app.route('/search')
@@ -169,22 +220,23 @@ def findWine():
 	region2 = request.form['region2']
 	vinyard = request.form['vinyard']
 
+	# *~ stand for case insensitive search
 	constaints = []
 	if winery != '':
-		constaints.append('winery = ' + winery)
+		constaints.append('winery ~* \'' + winery + '\'')
 	if country != '':
-		constaints.append('country = ' + country)
+		constaints.append('country ~* \'' + country + '\'')
 	if province != '':
-		constaints.append('province = ' + province)
+		constaints.append('province ~* \'' + province + '\'')
 	if region1 != '':
-		constaints.append('region1 = ' + region1)
+		constaints.append('region1 ~* \'' + region1 + '\'')
 	if region2 != '':
-		constaints.append('region2 = ' + region2)
+		constaints.append('region2 ~* \'' + region2 + '\'')
 	if vinyard != '':
-		constaints.append('vinyard = ' + vinyard)
+		constaints.append('vinyard ~* \'' + vinyard + '\'')
 
 	# the with query 
-	query = 'SELECT lid FROM Location'
+	query = 'SELECT lid, country FROM Location'
 	if len(constaints) != 0:
 		query = query + ' WHERE'
 		for s in constaints:
@@ -193,24 +245,89 @@ def findWine():
 	query = "WITH loc AS (" + query + ") "
 
 	# append the find query
-	query = query + "SELECT wid FROM wine AS w JOIN loc AS l ON w.lid = l.lid"
+	query = query + "SELECT w.grapetype, w.wid, l.country FROM wine AS w JOIN loc AS l ON w.lid = l.lid"
 
 	if grapetype != '':
-		query = query + " WHERE w.grapeType = " + grapetype
+		query = query + " WHERE w.grapeType ~* \'" + grapetype + "\'"
 
-	query = query + " LIMIT 20"
+	print("\n" + query + "\n")
 
 	# execute the query
 	valid_wine = g.conn.execute(query)
 	wine = []
 	for item in valid_wine:
-		wine.append('Wine #%s'%(item['wid']))
+		wineInfoString = 'Wine #%s'%(item['wid'])
+		wineInfoString = wineInfoString + ': ' + item['grapetype'] + " Wine"
+		if item['country'] is not None:
+			wineInfoString = wineInfoString + ", from " + item['country']
+		wine.append(wineInfoString)
+
 	valid_wine.close()
 	context = dict(data = wine)
 
-	return render_template("searchResult.html", **context)
+	if len(wine) != 0:
+		return render_template("searchResult.html", **context)
+	else:
+		return render_template("noWine.html")
 
 #@app.route('')
+
+
+@app.template_filter()
+def getInfo(item):
+	query = "WITH onlyUser AS (SELECT * FROM wine WHERE wid = " + item[6:] + ") "
+	query = query + "SELECT * FROM onlyUser AS o JOIN Location AS l ON l.lid = o.lid"
+
+	# execute the query
+	valid_wine = g.conn.execute(query)
+	wine = []
+	for item in valid_wine:
+		wineInfoString = 'Wine #%s:\n'%(item['wid'])
+		wineInfoString = wineInfoString + "Grape type: "+ item['grapetype'] + "\n"
+
+		# country
+		if item['country'] is not None:
+			wineInfoString = wineInfoString + "Country: " + item['country'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Country: -\n"
+
+		# province
+		if item['province'] is not None:
+			wineInfoString = wineInfoString + "Province: " + item['province'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Province: -\n"
+
+		# region1
+		if item['region1'] is not None:
+			wineInfoString = wineInfoString + "Sub-region1: " + item['region1'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Sub-region1: -\n"
+
+		# region2
+		if item['region2'] is not None:
+			wineInfoString = wineInfoString + "Sub-region2: " + item['region2'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Sub-region2: -\n"
+
+		# winery
+		if item['winery'] is not None:
+			wineInfoString = wineInfoString + "Winery: " + item['winery'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Winery: -\n"
+
+		# vinyard
+		if item['vinyard'] is not None:
+			wineInfoString = wineInfoString + "Vinyard: " + item['vinyard'] + "\n"
+		else:
+			wineInfoString = wineInfoString + "Vinyard: -\n"
+
+		wine.append(wineInfoString)
+
+	valid_wine.close()
+	
+
+	return wine[0]
+
 
 
 
