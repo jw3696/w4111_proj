@@ -12,14 +12,8 @@
   <div>Here's a list of wines you asked for...</div>
 
    {% for item in data %}
-      <!---<div>{{item}} 
-        <c:url var="wineInfo" value="/wineInfo">
-          <c:param name="item" value={{item}} />
-        </c:url>
-        <a href="${wineInfo}">Detail..</a>
-      </div>
-      --->
-      <div>{{item}} <a href="/wineInfo/{{item}}">Detail</a></div>
+      {% set list = item.split() %}
+        <div>{{item}} <a href="/wineInfo/{{list[2]}}">Detail</a></div>
    {% endfor %}
 
 {% if error %}
