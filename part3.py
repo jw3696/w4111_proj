@@ -110,7 +110,7 @@ def login():
 
 @app.route('/user/<id>')
 def user(id):
-	if !login:
+	if login == False:
 		redirect('/login')
 
 def another():
@@ -131,8 +131,6 @@ def noWine():
 @app.route('/addWine')
 def addWine():
 	return render_template("addWine.html")
-
-
 
 
 

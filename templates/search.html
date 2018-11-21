@@ -10,14 +10,16 @@
 <body>
   <h1>What kind of wine are you looking for?</h1>
 
+  <form method="POST" action="/findWine">
+  <p>Grape type: <input type="text" name="grape_type"> </p>
+  <p>Winery: <input type="text" name="winery"> </p>
+  <p>Country: <input type="text" name="country"> </p>
+  <p>Province: <input type="text" name="province"> </p>
+  <p>Sub-region 1: <input type="text" name="region1"> </p>
+  <p>Sub-region 2: <input type="text" name="region2"> </p>
+  <p>Vinyard: <input type="text" name="vinyard"> </p>
+  </form>
 
-  <p>Grape type: <input type="text" name="grape_type" required/> </p>
-  <p>Winery: <input type="text" name="winery" required/> </p>
-  <p>Country: <input type="text" name="country" required/> </p>
-  <p>Province: <input type="text" name="province" required/> </p>
-  <p>Sub-region 1: <input type="text" name="region1" required/> </p>
-  <p>Sub-region 2: <input type="text" name="region2" required/> </p>
-  <p>Vinyard: <input type="text" name="vinyard" required/> </p>
   <p><a href="/noWine">Submit</a>
 
 </body>
