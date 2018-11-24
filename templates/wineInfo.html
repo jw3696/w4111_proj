@@ -11,14 +11,24 @@
 {% block body %}
   <h1>Here is the info of the wine...</h1>
 
-   {% for item in data %}
+   <!--{% for item in data %}
       <div>{{item}}</div>
+   {% endfor %}-->
+
+   {% for i in range(0, num2wine) %}
+      <div>{{data[i]}}</div>
    {% endfor %}
+
+   <h2> Here is the review for this wine...</h2>
+  {% for i in range(num2wine, datalen) %}
+      <div>{{data[i]}}</div>
+   {% endfor %}
+
 
 {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
 {% endif %}
-    <p><a href="/">Back to mainpage</a><a href="/search">Back to search page</a></p>
+    <p><a href="/">Back to mainpage</a>  <a href="/search">Back to search page</a></p>
 {% endblock %}
   
 </html>

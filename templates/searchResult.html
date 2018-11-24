@@ -9,7 +9,9 @@
   </style>
 
 {% block body %}
-  <div>Here's a list of wines you asked for...</div>
+  <h1>Here's a list of wines you asked for...</h1>
+
+  <h2> Did not find the one your are looking for? What about adding it?  <a href="/addWine">Add Wine</a></h2>
 
    {% for item in data %}
       {% set list = item.split() %}
@@ -19,9 +21,6 @@
 {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
 {% endif %}
-
-<p> Did not find the one your are looking for? What about adding it? </p>
-<p><a href="/addWine">Add Wine</a></p>
 
 {% endblock %}
   

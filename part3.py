@@ -150,10 +150,10 @@ def logout():
 	loginV = False
 	return redirect('/')
 
-@app.route('/wineInfo/<item>')
-def wineInfo(item, methods=['POST']):
+@app.route('/wineInfo/<wineid>')
+def wineInfo(wineid, methods=['POST']):
 
-	query = "WITH onlyWine AS (SELECT * FROM wine WHERE wid = " + item + ") "
+	query = "WITH onlyWine AS (SELECT * FROM wine WHERE wid = " + wineid + ") "
 	query = query + "SELECT * FROM onlyWine AS o JOIN Location AS l ON l.lid = o.lid"
 
 	print(query)
@@ -166,7 +166,7 @@ def wineInfo(item, methods=['POST']):
 		wineInfoString = 'Wine # %s:\n'%(item['wid'])
 		wine.append(wineInfoString)
 
-		wineInfoString = "Grape type: "+ item['grapetype'] + "\n"
+		wineInfoString = "Grape Type: "+ item['grapetype'] + "\n"
 		wine.append(wineInfoString)
 
 		# country
@@ -212,9 +212,33 @@ def wineInfo(item, methods=['POST']):
 		wine.append(wineInfoString)
 
 	valid_wine.close()
-	context = dict(data = wine)
 
-	return render_template("wineInfo.html", **context)
+	# get average point
+	query = 'SELECT AVG(point) AS  avg FROM Review WHERE wid = ' + wineid + ';'
+	avg_point = g.conn.execute(query)
+	for item in avg_point:
+		wineInfoString = 'Average Rating: ' + str(item['avg'])
+		wine.append(wineInfoString)
+	avg_point.close()
+	num2wine = len(wine)
+
+	# getting the review
+	query = 'WITH validReview AS (SELECT rid, uid, title, point FROM Review WHERE wid = ' + wineid + ')'
+	query = query + 'SELECT u.name, r.title, r.rid, r.point FROM validReview AS r JOIN WebUser AS u ON r.uid = u.uid'
+	query = query + ' ORDER BY point DESC'
+	review_list = g.conn.execute(query)
+	for item in review_list:
+		wineInfoString = 'Review #: ' + str(item['rid']) + '     '
+		wineInfoString = wineInfoString + 'Reviewer: ' + item['name'] + '     '
+		wineInfoString = wineInfoString + 'Point: ' + str(item['point']) + '     '
+		wine.append(wineInfoString)
+	review_list.close()
+
+
+
+
+	context = dict(data = wine)
+	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), **context)
 
 @app.route('/search')
 def search():
@@ -321,6 +345,8 @@ def findWine():
 
 	if grapetype != '':
 		query = query + " WHERE w.grapeType ~* \'" + grapetype + "\'"
+
+	query = query + " ORDER BY w.wid ASC"
 
 	print("\n" + query + "\n")
 

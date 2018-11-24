@@ -9,20 +9,13 @@
 
 <body>
   <h1>We are sorry but we do not find that wine.</h1>
-  <h1>Do you want to <a href="/addWine">add one</a>?</h1>
+  <h2>Do you want to add one?</h2>
 
+  <p><a href="/addWine">Add Wine</a></p>
 
+  
+  <p><a href="/">Back to mainpage</a>  <a href="/search">Back to search page</a></p>
 
-
-  <div>This is a place where you learn about and share your favorite wine. </div>
-
-  <p><a href="/signup">Sign Up</a>  <a href="/login">Login</a></p>
-
-  <div>Below are the 10 most popular winery-grape pair in our website.</div>
-
-  {% for item in data %}
-    <div>{{item}}</div>
-  {% endfor %}
 
 </body>
 
