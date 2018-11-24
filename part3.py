@@ -35,6 +35,7 @@ engine = create_engine(DATABASEURI)
 engine.execute("""DROP TABLE IF EXISTS testUser;""")
 engine.execute("""CREATE TABLE IF NOT EXISTS testUser ( id serial, name text UNIQUE, password text );""")
 engine.execute("""INSERT INTO testUser(name,password) VALUES ('user','pass');""")
+#engine.execute("""DELETE FROM Location WHERE winery = 'testWinery';""")
 
 
 @app.before_request
@@ -88,13 +89,12 @@ def addUser():
 	psw = request.form['psw']
 	#cmd = 'INSERT INTO testUser VALUES (:name)';
 	try:
-		g.conn.execute('INSERT INTO testUser(name,password) VALUES (\'%s\',\'%s\')'% (name,psw));
+		g.conn.execute('INSERT INTO webuser(name,password) VALUES (\'%s\',\'%s\')'% (name,psw));
 	except:
-		flash("User name already exist")
+		flash("Username already exist")
 		return redirect('/signup')
 
 	return redirect('/')
-
 
 
 @app.route('/login')
@@ -106,15 +106,15 @@ def loginU():
 	name = request.form['name']
 	psw = request.form['psw']
 	try:
-		userid = g.conn.execute('SELECT id FROM testUser WHERE name=\'%s\' AND password = \'%s\''%(name, psw))
+		userid = g.conn.execute('SELECT uid FROM webuser WHERE name=\'%s\' AND password = \'%s\''%(name, psw))
 		uid = []
 		for result in userid:
-			uid.append(result['id'])
+			print(result)
+			uid.append(result['uid'])
 		userid.close()
+		print(uid)
 		global loginV
 		loginV = True
-		print("I'm here")
-		print(uid)
 	except:
 		flash('invalid username or password')
 		return redirect('/login')
@@ -127,7 +127,7 @@ def user(uid):
 	if not loginV:
 		return redirect('/login')
 
-	username = g.conn.execute('SELECT name FROM testUser WHERE id = \'%s\''%(uid))
+	username = g.conn.execute('SELECT name FROM webuser WHERE uid = \'%s\''%(uid))
 	name = []
 	for user in username:
 		name.append(user['name'])
@@ -138,9 +138,17 @@ def user(uid):
 	for item in wished:
 		wine.append('Wine #%s'%(item['wid']))
 	wished.close()
+	if not wine:
+		wine.append("Oops, you haven't wished any wine yet.")
 	context = dict(data = wine)
 
 	return render_template("user.html", name=name[0], **context)
+
+@app.route('/logout')
+def logout():
+	global loginV
+	loginV = False
+	return redirect('/')
 
 @app.route('/wineInfo')
 def wineInfo(item):
@@ -205,9 +213,63 @@ def search():
 def noWine():
 	return render_template("noWine.html")
 
+@app.route('/addWineA', methods=['POST'])
+def addWineA():
+	grapetype = request.form['grape_type']
+	winery = request.form['winery']
+	country = request.form['country']
+	province = request.form['province']
+	region1 = request.form['region1']
+	region2 = request.form['region2']
+	vinyard = request.form['vinyard']
+
+	select = []
+	if winery != '':
+		select.append('winery = \'%s\''%(winery))
+	if country != '':
+		select.append('country = \'%s\''%(country))
+	if province != '':
+		select.append('province = \'%s\''%(province))
+	if region1 != '':
+		select.append('region1 = \'%s\''%(region1))
+	if region2 != '':
+		select.append('region2 = \'%s\''%(region2))
+	if vinyard != '':
+		select.append('vinyard = \'%s\''%(vinyard))
+
+	query = None
+	if select:
+		query = 'WHERE'
+		for clause in select:
+			query = query + ' ' + clause + ' AND'
+		query = query[0:len(query)-4]
+
+	try:
+		try:
+			addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')' \
+			% (winery,country,province,region1,region2,vinyard));
+			addLoc.close()
+		except sqlalchemy.exc.IntegrityError:
+			pass
+			
+		getId = g.conn.execute('SELECT lid FROM Location %s'%(query))
+		lid = []
+		for result in getId:
+			lid.append(result['lid'])
+		getId.close()
+		lid = lid[0]
+		addW = g.conn.execute('INSERT INTO Wine(grapetype,lid) VALUES (\'%s\',\'%s\')'%(grapetype,lid))
+		addW.close()
+	except:
+		flash("Invalid Wine info")
+		return redirect('/addWine')
+
+	return redirect('/')
+
 @app.route('/addWine')
 def addWine():
 	return render_template("addWine.html")
+
 
 @app.route('/findWine', methods=['POST'])
 def findWine():
