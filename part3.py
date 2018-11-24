@@ -33,7 +33,7 @@ engine = create_engine(DATABASEURI)
 #engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
 
 engine.execute("""DROP TABLE IF EXISTS testUser;""")
-engine.execute("""CREATE TABLE IF NOT EXISTS testUser ( id serial, name text UNIQUE, password text );""")
+engine.execute("""CREATE TABLE IF NOT EXISTS testUser ( uid serial, name text UNIQUE, password text );""")
 engine.execute("""INSERT INTO testUser(name,password) VALUES ('user','pass');""")
 #engine.execute("""DELETE FROM Location WHERE winery = 'testWinery';""")
 
@@ -85,13 +85,16 @@ def signup():
 
 @app.route('/addUser', methods=['POST'])
 def addUser():
+	uid = request.form['uid']
 	name = request.form['name']
 	psw = request.form['psw']
+	print(name)
+	print(psw)
 	#cmd = 'INSERT INTO testUser VALUES (:name)';
 	try:
-		g.conn.execute('INSERT INTO webuser(name,password) VALUES (\'%s\',\'%s\')'% (name,psw));
+		g.conn.execute('INSERT INTO webUser(uid,name,password) VALUES (\'%s\',\'%s\',\'%s\')'% (uid,name,psw));
 	except:
-		flash("Username already exist")
+		flash("User ID already exist")
 		return redirect('/signup')
 
 	return redirect('/')
@@ -103,22 +106,24 @@ def login():
 
 @app.route('/loginU', methods=['POST'])
 def loginU():
-	name = request.form['name']
+	uid = request.form['uid']
 	psw = request.form['psw']
 	try:
-		userid = g.conn.execute('SELECT uid FROM webuser WHERE name=\'%s\' AND password = \'%s\''%(name, psw))
-		uid = []
+		userid = g.conn.execute('SELECT uid FROM webUser WHERE uid=\'%s\' AND password = \'%s\''%(uid, psw))
+		uidL = []
 		for result in userid:
 			print(result)
-			uid.append(result['uid'])
+			uidL.append(result['uid'])
 		userid.close()
+		if not uidL:
+			raise sqlalchemy.exc.IntegrityError
 		print(uid)
 		global loginV
 		loginV = True
 	except:
-		flash('invalid username or password')
+		flash('Invalid User ID or Password')
 		return redirect('/login')
-	return redirect('/user/%s'%uid[0])
+	return redirect('/user/%s'%uid)
 
 
 @app.route('/user/<uid>')
@@ -127,7 +132,7 @@ def user(uid):
 	if not loginV:
 		return redirect('/login')
 
-	username = g.conn.execute('SELECT name FROM webuser WHERE uid = \'%s\''%(uid))
+	username = g.conn.execute('SELECT name FROM webUser WHERE uid = \'%s\''%(uid))
 	name = []
 	for user in username:
 		name.append(user['name'])
@@ -247,6 +252,9 @@ def search():
 @app.route('/noWine')
 def noWine():
 	return render_template("noWine.html")
+
+@app.route('/likeWine')
+
 
 @app.route('/addWineA', methods=['POST'])
 def addWineA():
