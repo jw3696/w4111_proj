@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+{% block body %}
+  <h1>Please enter wine info</h1>
+
+{% if error %}
+    <p class=error><strong>Error:</strong> {{ error }}
+{% endif %}
+
+<form method="POST" action="/addWineA">
+<p>Grape type: <input type="text" name="grape_type"> </p>
+<p>Winery: <input type="text" name="winery"> </p>
+<p>Country: <input type="text" name="country"> </p>
+<p>Province: <input type="text" name="province"> </p>
+<p>Sub-region 1: <input type="text" name="region1"> </p>
+<p>Sub-region 2: <input type="text" name="region2"> </p>
+<p>Vinyard: <input type="text" name="vinyard"> </p>
+<input type="submit" value="Add"></p>
+</form>
+
+{% endblock %}
