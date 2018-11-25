@@ -227,23 +227,39 @@ def wineInfo(wineid, methods=['POST']):
 	avg_point.close()
 	num2wine = len(wine)
 
+	# get the tags
+	query = 'WITH wineTag AS(SELECT uid, content FROM UserLikeTag WHERE wid = ' + wineid + ')'
+	query = query + 'SELECT content FROM wineTag GROUP BY content ORDER BY COUNT(*) DESC;'
+	tags = g.conn.execute(query)
+	for item in tags:
+		wineInfoString = str(item['content'])
+		wine.append(wineInfoString)
+	tags.close()
+	num2tag = len(wine)
+
 	# getting the review
-	query = 'WITH validReview AS (SELECT rid, uid, title, point FROM Review WHERE wid = ' + wineid + ')'
-	query = query + 'SELECT u.name, r.title, r.rid, r.point FROM validReview AS r JOIN WebUser AS u ON r.uid = u.uid'
+	query = 'WITH validReview AS (SELECT rid, uid, title, description, point FROM Review WHERE wid = ' + wineid + ')'
+	query = query + 'SELECT u.name, r.title, r.description, r.rid, r.point FROM validReview AS r JOIN WebUser AS u ON r.uid = u.uid'
 	query = query + ' ORDER BY point DESC'
 	review_list = g.conn.execute(query)
+	index = 1
 	for item in review_list:
-		wineInfoString = 'Review #: ' + str(item['rid']) + '     '
+		wineInfoString = '#' + str(index) + ': '
 		wineInfoString = wineInfoString + 'Reviewer: ' + item['name'] + '     '
-		wineInfoString = wineInfoString + 'Point: ' + str(item['point']) + '     '
+		wineInfoString = wineInfoString + 'Point: ' + str(item['point']) + '/100'
 		wine.append(wineInfoString)
+		wineInfoString = "Description: " + item['description']
+		wine.append(wineInfoString)
+		wineInfoString = "-"
+		wine.append(wineInfoString)
+		index = index + 1
 	review_list.close()
 
 
 
 
 	context = dict(data = wine)
-	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), **context)
+	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context)
 
 @app.route('/search')
 def search():
@@ -376,4 +392,19 @@ def findWine():
 	else:
 		return render_template("noWine.html")
 
-#@app.route('')
+@app.route('/addOrLikeTag', methods=['POST'])
+def addOrLikeTag():
+
+	# some code to add  tag and like tag
+
+	# return back to the original URL after finishing the action
+	return redirect(request.referrer)
+
+@app.route('/addWish')
+def addWish():
+
+	# some code to add to wish list
+
+	# return back to the original URL after finishing the action
+	return redirect(request.referrer)
+

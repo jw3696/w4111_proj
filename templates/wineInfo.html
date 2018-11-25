@@ -6,23 +6,49 @@
       font-size: 15pt;
       font-family: arial;
     }
+    hr { 
+    display: block;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    border-style: inset;
+    border-width: 1px;
+    } 
   </style>
 
 {% block body %}
   <h1>Here is the info of the wine...</h1>
+  <h2><a href="/addWish">Add this wine to my wish list</a></h2>
 
-   <!--{% for item in data %}
-      <div>{{item}}</div>
-   {% endfor %}-->
-
+   <h2>Specifications: </h2>
    {% for i in range(0, num2wine) %}
       <div>{{data[i]}}</div>
    {% endfor %}
 
-   <h2> Here is the review for this wine...</h2>
-  {% for i in range(num2wine, datalen) %}
-      <div>{{data[i]}}</div>
+
+  <h2>Tags: </h2>
+  {% for i in range(num2wine, num2tag) %}
+      #{{i - num2wine + 1}}: {{data[i]}}
    {% endfor %}
+
+  <!-- add tag-->
+  <form method="POST" action="/addOrLikeTag">
+    <p> Want to like a tag or add a new tag? 
+      <input type="text" name="new_tag" required/> 
+      <input type="submit" value="Like/Add">
+    </p>
+  </form>
+
+
+   <h2>Reviews: </h2>
+  {% for i in range(num2tag, datalen) %}
+      {% if loop.index is divisibleby 3 %}
+        <hr>
+      {% else %}
+        <div>{{data[i]}}</div>
+      {% endif %}
+  {% endfor %}
 
 
 {% if error %}
