@@ -11,14 +11,21 @@
 {% block body %}
   <h1>Hi, {{name}}</h1>
 
+  <div><a href="/logout">Log Out</a></div>
+  <p><a href="/search">Search Wine</a></p>
+  <p><a href="/addWine">Add Wine</a></p>
+
   <div>Here's a list of wines you wished</div>
 
    {% for item in data %}
-      <div>{{item}}</div>
-      <!--<div><a href="/wineInfo">{{item}}</a></div>-->
+      <!-- <div>{{item}}</div> -->
+      {% if item != "Oops, you haven't wished any wine yet." %}
+        <div><a href="/wineInfo/{{item}}"> Wine #{{item}}</a></div>
+      {% else %}
+        <div>{{item}}</div>
+      {% endif %}
    {% endfor %}
 
-   <div><a href="/logout">Log Out</a></div>
 
 {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
