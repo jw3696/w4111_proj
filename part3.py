@@ -346,12 +346,11 @@ def addWine():
 		for k,v in info.items():
 			if v == '':
 				info[k] = 'NULL'
-<<<<<<< HEAD
 
 		try:
 			try:
-				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
-				, (info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
+				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)',
+					(info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
 				addLoc.close()
 			except sqlalchemy.exc.IntegrityError:
 				pass
@@ -386,7 +385,6 @@ def addWine():
 		except:
 			flash("Invalid Wine info")
 			return redirect('/addWine')
-
 
 	return render_template("addWine.html")
 
