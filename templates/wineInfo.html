@@ -24,7 +24,11 @@
 {% block body %}
   <h1>Here is the info of the wine...</h1>
   {% if log != '' %}
-    <h2><a href="/addWish/{{wid}}">Add this wine to my wish list</a></h2>
+    {% if addOrRemoveWish !='' %}
+      <h2><a href="/addWish/{{wid}}">Add this wine to my wish list</a></h2>
+    {% else %}
+      <h2><a href="/removeWish/{{wid}}">Remove this wine to my wish list</a></h2>
+    {% endif %}
   {% endif %}
 
 
@@ -89,9 +93,9 @@
 {% endif %}
 
 {% if log == '' %}
-    <p><a href="/">Back to mainpage</a>  <a href="/search">Back to search page</a></p>
+    <p><a href="/">Back to mainpage</a>  <a href="/search">Back to start a new search</a> <a href="javascript:history.back()">Back to previous page</a> </p>
 {% else %}
-    <p><a href="/user/{{log}}">Back to my page</a>  <a href="/search">Back to search page</a></p>
+    <p><a href="/user/{{log}}">Back to my page</a>  <a href="/search">Back to start a new search</a>  <a href="javascript:history.back()">Back to previous page</a></p>
 {% endif %}
 
 {% endblock %}

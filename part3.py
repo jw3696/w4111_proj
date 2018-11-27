@@ -232,11 +232,21 @@ def wineInfo(wineid, methods=['POST']):
 	context = dict(data = wine)
 
 	logedIn = ''
+	addOrRemoveWish = ''
 	uTag = []
-
+	idx = {}
 	if 'currUser' in session:
 		logedIn = session['currUser']
+
 		try:
+			wishlist =[]
+			wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = \'%s\' AND wid = \'%s\''%(logedIn,wineid))
+			for item in wished:
+				wishlist.append(item['wid'])
+			if len(wishlist) == 0:
+				addOrRemoveWish = 'a'
+			wished.close()
+				
 			liked = g.conn.execute('SELECT content FROM UserLikeTag WHERE uid = \'%s\' AND wid = \'%s\''%(logedIn,wineid))
 			for item in liked:
 				uTag.append(wine.index(item['content']))
@@ -246,7 +256,7 @@ def wineInfo(wineid, methods=['POST']):
 			print("no liked tags")
 	idx = dict(dataT = uTag)
 
-	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context, wid = wineid, log=logedIn, **idx)
+	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context, wid = wineid, log=logedIn,addOrRemoveWish=addOrRemoveWish, **idx)
 
 @app.route('/search' , methods = ['GET','POST']) #FINISHED
 def search():
@@ -408,6 +418,21 @@ def addWish(wid):
 	uid = session['currUser']
 	try:
 		g.conn.execute('INSERT INTO UserWishWine(uid,wid) VALUES (\'%s\',\'%s\')'% (uid,wid));
+	except:
+		flash('Invalid') 
+
+	print(request.referrer)
+
+	return redirect(request.referrer)
+
+@app.route('/removeWish/<wid>') # FINISHED
+def removeWish(wid):
+	if 'currUser' not in session:
+		return redirect('/login')
+
+	uid = session['currUser']
+	try:
+		g.conn.execute('DELETE FROM UserWishWine WHERE uid =  \'%s\' AND wid = \'%s\''% (uid,wid));
 	except:
 		flash('Invalid') 
 
