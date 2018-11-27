@@ -72,7 +72,7 @@ def signup():
 		name = request.form['name']
 		psw = request.form['psw']
 		try:
-			g.conn.execute('INSERT INTO webUser(uid,name,password) VALUES (\'%s\',\'%s\',\'%s\')'% (uid,name,psw));
+			g.conn.execute('INSERT INTO webUser(uid,name,password) VALUES (%s,%s,%s)', (uid,name,psw));
 			return redirect('/')
 		except:
 			flash("User ID already exist")
@@ -86,7 +86,7 @@ def login():
 		uid = request.form['uid']
 		psw = request.form['psw']
 		try: 
-			userid = g.conn.execute('SELECT uid FROM webUser WHERE uid=\'%s\' AND password = \'%s\''%(uid, psw))
+			userid = g.conn.execute('SELECT uid FROM webUser WHERE uid=%s AND password = %s', (uid, psw))
 			uidL = []
 			for result in userid:
 				print(result)
@@ -107,13 +107,13 @@ def user(uid):
 	if 'currUser' not in session:
 		return redirect('/login')
 
-	username = g.conn.execute('SELECT name FROM webUser WHERE uid = \'%s\''%(uid))
+	username = g.conn.execute('SELECT name FROM webUser WHERE uid = %s', (uid,))
 	name = []
 	for user in username:
 		name.append(user['name'])
 	username.close()
 
-	wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = \'%s\''%(uid))
+	wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = %s',, (uid,))
 	wine = []
 	for item in wished:
 		wine.append(item['wid'])
@@ -129,17 +129,14 @@ def logout():
 	session.pop('currUser')
 	return redirect('/') 
 
-@app.route('/wineInfo/<wineid>') 
+@app.route('/wineInfo/<wineid>')  # INJECTION CLEARED
 def wineInfo(wineid, methods=['POST']):
 
-	query = "WITH onlyWine AS (SELECT * FROM wine WHERE wid = " + wineid + ") "
+	query = "WITH onlyWine AS (SELECT * FROM wine WHERE wid = %s) "
 	query = query + "SELECT * FROM onlyWine AS o JOIN Location AS l ON l.lid = o.lid"
 
-	#print(query)
-
-
 	# execute the query
-	valid_wine = g.conn.execute(query)
+	valid_wine = g.conn.execute(query,(wineid,))
 	wine = []
 	for item in valid_wine:
 		wineInfoString = 'Wine # %s:\n'%(item['wid'])
@@ -200,18 +197,18 @@ def wineInfo(wineid, methods=['POST']):
 	valid_wine.close()
 
 	# get average point
-	query = 'SELECT AVG(point) AS  avg FROM Review WHERE wid = ' + wineid + ';'
-	avg_point = g.conn.execute(query)
+	query = 'SELECT AVG(point) AS  avg FROM Review WHERE wid = %s;'
+	avg_point = g.conn.execute(query, (wineid,))
 	for item in avg_point:
-		wineInfoString = 'Average Rating: ' + str(item['avg'])
+		wineInfoString = 'Average Rating: ' + str(round(item['avg'],2))
 		wine.append(wineInfoString)
 	avg_point.close()
 	num2wine = len(wine)
 
 	# get the tags
-	query = 'WITH wineTag AS(SELECT uid, content FROM UserLikeTag WHERE wid = ' + wineid + ')'
+	query = 'WITH wineTag AS(SELECT uid, content FROM UserLikeTag WHERE wid = %s)'
 	query = query + 'SELECT content FROM wineTag GROUP BY content ORDER BY COUNT(*) DESC;'
-	tags = g.conn.execute(query)
+	tags = g.conn.execute(query, (wineid,))
 	for item in tags:
 		wineInfoString = str(item['content'])
 		wine.append(wineInfoString)
@@ -219,10 +216,10 @@ def wineInfo(wineid, methods=['POST']):
 	num2tag = len(wine)
 
 	# getting the review
-	query = 'WITH validReview AS (SELECT rid, uid, title, description, point FROM Review WHERE wid = ' + wineid + ')'
+	query = 'WITH validReview AS (SELECT rid, uid, title, description, point FROM Review WHERE wid = %s)'
 	query = query + 'SELECT u.name, r.title, r.description, r.rid, r.point FROM validReview AS r JOIN WebUser AS u ON r.uid = u.uid'
 	query = query + ' ORDER BY point DESC'
-	review_list = g.conn.execute(query)
+	review_list = g.conn.execute(query, (wineid,))
 	index = 1
 	for item in review_list:
 		wineInfoString = '#' + str(index) + ': '
@@ -247,14 +244,14 @@ def wineInfo(wineid, methods=['POST']):
 
 		try:
 			wishlist =[]
-			wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = \'%s\' AND wid = \'%s\''%(logedIn,wineid))
+			wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = %s AND wid = %s', (logedIn,wineid))
 			for item in wished:
 				wishlist.append(item['wid'])
 			if len(wishlist) == 0:
 				addOrRemoveWish = 'a'
 			wished.close()
 				
-			liked = g.conn.execute('SELECT content FROM UserLikeTag WHERE uid = \'%s\' AND wid = \'%s\''%(logedIn,wineid))
+			liked = g.conn.execute('SELECT content FROM UserLikeTag WHERE uid = %s AND wid = %s', (logedIn,wineid))
 			for item in liked:
 				uTag.append(wine.index(item['content']))
 			liked.close()
@@ -332,57 +329,41 @@ def noWine():
 @app.route('/addWine', methods = ['GET','POST']) # FINISHED # INJECT CLEAR
 def addWine():
 	if request.method == 'POST':
-		info = {}
-		info['grapetype'] = request.form['grape_type']
-		info['winery'] = request.form['winery']
-		info['country'] = request.form['country']
-		info['province'] = request.form['province']
-		info['region1'] = request.form['region1']
-		info['region2'] = request.form['region2']
-		info['vinyard'] = request.form['vinyard']
-		info['price'] = request.form['price']
+		grapetype = request.form['grape_type']
+		winery = request.form['winery']
+		country = request.form['country']
+		province = request.form['province']
+		region1 = request.form['region1']
+		region2 = request.form['region2']
+		vinyard = request.form['vinyard']
 
-		for k,v in info.items():
-			if v == '':
-				info[k] = 'NULL'
-			elif k != 'price':
-				info[k] = '\'%s\''%(v)
-
-		#try:
 		try:
-			addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
-			% (info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
-			addLoc.close()
-		except sqlalchemy.exc.IntegrityError:
-			pass
-		
-		query = "WHERE "
-		for k,v in info.items():
-			if k!="price" and k!="grapetype":
-				if v == "NULL":
-					query = query + '%s IS NULL AND '%(k)
-				else:
-					query = query + '%s = %s AND '%(k,v)
-		query = query[0:len(query)-4]
-		print(query)
-
-		getId = g.conn.execute('SELECT lid FROM Location %s'%(query))
-		lid = []
-		for result in getId:
-			lid.append(result['lid'])
-		getId.close()
-		lid = lid[0]
-		addW = g.conn.execute('INSERT INTO Wine(grapetype,lid,price) VALUES (%s,\'%s\',%s)'%(info['grapetype'],lid,info['price']))
-		addW.close()
-		wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = \'%s\''%(info['grapetype'],lid))
-		wid = []
-		for result in wineid:
-			wid.append(result['wid'])
-		wineid.close()
-		wid = wid[0]
-		#except:
-		#	flash("Invalid Wine info")
-		#	return redirect('/addWine')
+			try:
+				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
+				, (winery,country,province,region1,region2,vinyard));
+				addLoc.close()
+			except sqlalchemy.exc.IntegrityError:
+				pass
+			
+			query = 'WHERE winery = \'%s\' AND country = \'%s\' AND province = \'%s\' AND region1 = \'%s\' AND region2 = \'%s\' AND vinyard = \'%s\''
+			query = 'SELECT lid FROM Location %s'%(query)
+			getId = g.conn.execute(query, (winery,country,province,region1,region2,vinyard))
+			lid = []
+			for result in getId:
+				lid.append(result['lid'])
+			getId.close()
+			lid = lid[0]
+			addW = g.conn.execute('INSERT INTO Wine(grapetype,lid) VALUES (%s,%s)', (grapetype,lid))
+			addW.close()
+			wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = %s', (grapetype,lid))
+			wid = []
+			for result in wineid:
+				wid.append(result['wid'])
+			wineid.close()
+			wid = wid[0]
+		except:
+			flash("Invalid Wine info")
+			return redirect('/addWine')
 
 
 		return redirect('/wineInfo/%s'%(wid))
@@ -459,7 +440,7 @@ def removeWish(wid):
 
 	uid = session['currUser']
 	try:
-		g.conn.execute('DELETE FROM UserWishWine WHERE uid =  %s AND wid = %s', (uid,wid));
+		g.conn.execute('DELETE FROM UserWishWine WHERE uid = %s AND wid = %s', (uid,wid));
 	except:
 		flash('Invalid') 
 
