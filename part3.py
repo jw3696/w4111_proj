@@ -329,45 +329,57 @@ def noWine():
 @app.route('/addWine', methods = ['GET','POST']) # FINISHED # INJECT CLEAR
 def addWine():
 	if request.method == 'POST':
-		grapetype = request.form['grape_type']
-		winery = request.form['winery']
-		country = request.form['country']
-		province = request.form['province']
-		region1 = request.form['region1']
-		region2 = request.form['region2']
-		vinyard = request.form['vinyard']
+		info = {}
+ 		info['grapetype'] = request.form['grape_type']
+ 		info['winery'] = request.form['winery']
+ 		info['country'] = request.form['country']
+ 		info['province'] = request.form['province']
+ 		info['region1'] = request.form['region1']
+ 		info['region2'] = request.form['region2']
+ 		info['vinyard'] = request.form['vinyard']
+ 		info['price'] = request.form['price']
 
-		try:
-			try:
-				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
-				, (winery,country,province,region1,region2,vinyard));
-				addLoc.close()
-			except sqlalchemy.exc.IntegrityError:
-				pass
-			
-			query = 'WHERE winery = \'%s\' AND country = \'%s\' AND province = \'%s\' AND region1 = \'%s\' AND region2 = \'%s\' AND vinyard = \'%s\''
-			query = 'SELECT lid FROM Location %s'%(query)
-			getId = g.conn.execute(query, (winery,country,province,region1,region2,vinyard))
-			lid = []
-			for result in getId:
-				lid.append(result['lid'])
-			getId.close()
-			lid = lid[0]
-			addW = g.conn.execute('INSERT INTO Wine(grapetype,lid) VALUES (%s,%s)', (grapetype,lid))
-			addW.close()
-			wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = %s', (grapetype,lid))
-			wid = []
-			for result in wineid:
-				wid.append(result['wid'])
-			wineid.close()
-			wid = wid[0]
-		except:
-			flash("Invalid Wine info")
-			return redirect('/addWine')
+ 		for k,v in info.items():
+ 			if v == '':
+ 				info[k] = 'NULL'
+ 			elif k != 'price':
+ 				info[k] = '\'%s\''%(v)
 
+ 		try:
+	 		try:
+	 			addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
+	 			% (info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
+	 			addLoc.close()
+	 		except sqlalchemy.exc.IntegrityError:
+	 			pass
+	 		
+	 		query = "WHERE "
+	 		for k,v in info.items():
+	 			if k!="price" and k!="grapetype":
+	 				if v == "NULL":
+	 					query = query + '%s IS NULL AND '%(k)
+	 				else:
+	 					query = query + '%s = %s AND '%(k,v)
+	 		query = query[0:len(query)-4]
+	 		print(query)
 
-		return redirect('/wineInfo/%s'%(wid))
-
+	 		getId = g.conn.execute('SELECT lid FROM Location %s'%(query))
+	 		lid = []
+	 		for result in getId:
+	 			lid.append(result['lid'])
+	 		getId.close()
+	 		lid = lid[0]
+	 		addW = g.conn.execute('INSERT INTO Wine(grapetype,lid,price) VALUES (%s,\'%s\',%s)'%(info['grapetype'],lid,info['price']))
+	 		addW.close()
+	 		wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = \'%s\''%(info['grapetype'],lid))
+	 		wid = []
+	 		for result in wineid:
+	 			wid.append(result['wid'])
+	 		wineid.close()
+	 		wid = wid[0]
+	 	except:
+ 			flash("Invalid Wine info")
+ 			return redirect('/addWine')
 
 	return render_template("addWine.html")
 
