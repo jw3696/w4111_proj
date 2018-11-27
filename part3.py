@@ -113,7 +113,7 @@ def user(uid):
 		name.append(user['name'])
 	username.close()
 
-	wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = %s',, (uid,))
+	wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = %s', (uid,))
 	wine = []
 	for item in wished:
 		wine.append(item['wid'])
@@ -333,29 +333,28 @@ def noWine():
 def addWine():
 	if request.method == 'POST':
 		info = {}
- 		info['grapetype'] = request.form['grape_type']
- 		info['winery'] = request.form['winery']
- 		info['country'] = request.form['country']
- 		info['province'] = request.form['province']
- 		info['region1'] = request.form['region1']
- 		info['region2'] = request.form['region2']
- 		info['vinyard'] = request.form['vinyard']
- 		info['price'] = request.form['price']
+		info['grapetype'] = request.form['grape_type']
+		info['winery'] = request.form['winery']
+		info['country'] = request.form['country']
+		info['province'] = request.form['province']
+		info['region1'] = request.form['region1']
+		info['region2'] = request.form['region2']
+		info['vinyard'] = request.form['vinyard']
+		info['price'] = request.form['price']
 
- 		for k,v in info.items():
- 			if v == '':
- 				info[k] = 'NULL'
- 			# no need to do so as the execute will automatically include the ''
- 			#elif k != 'price':
- 			#	info[k] = '\'%s\''%(v)
+		for k,v in info.items():
+			if v == '':
+				info[k] = 'NULL'
+			# no need to do so as the execute will automatically include the ''
+			#elif k != 'price':
+			#	info[k] = '\'%s\''%(v)
 
- 		try:
+		try:
 	 		try:
-	 			addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
-	 			, (info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
-	 			addLoc.close()
-	 		except sqlalchemy.exc.IntegrityError:
-	 			pass
+				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)',(info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
+				addLoc.close()
+			except sqlalchemy.exc.IntegrityError:
+				pass
 	 		
 	 		strings = ()
 	 		query = "WHERE "
