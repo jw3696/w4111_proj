@@ -251,9 +251,10 @@ def wineInfo(wineid, methods=['POST']):
 			for item in liked:
 				uTag.append(wine.index(item['content']))
 			liked.close()
-			idx = dict(dataT = uTag)
+			#idx = dict(dataT = uTag)
 		except:
 			print("no liked tags")
+	idx = dict(dataT = uTag)
 
 	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context, wid = wineid, log=logedIn,addOrRemoveWish=addOrRemoveWish, **idx)
 
@@ -362,14 +363,38 @@ def addWine():
 
 	return render_template("addWine.html")
 
-@app.route('/likeTag/<wid>', methods=['POST'])
-def likeTag(wid):
-	# some code to add tag and like tag
-	
+@app.route('/updateTag/<wid>', methods=['POST']) # FINISHED
+def updateTag(wid):
+	# check logged in and get uid
+	if 'currUser' not in session:
+		return redirect('/login')
+	uid = session['currUser']
+
+	old = []
+	try:
+		query = g.conn.execute('SELECT content FROM UserLikeTag WHERE uid = \'%s\' AND wid = \'%s\''%(uid,wid))
+		for ele in query:
+			old.append(ele['content'])
+		query.close()
+	except:
+		pass
+
+	new = request.form.getlist('tags')
+
+	for item in new:
+		if item not in old:
+			# add like tag
+			g.conn.execute('INSERT INTO UserLikeTag(content,uid,wid) VALUES (\'%s\',\'%s\',\'%s\')'% (item,uid,wid));
+
+	for item in old:
+		if item not in new:
+			# unlike tag
+			g.conn.execute('DELETE FROM UserLikeTag WHERE content = \'%s\' AND uid = \'%s\' AND wid = \'%s\''% (item,uid,wid));
+
 	# return back to the original URL after finishing the action
 	return redirect(request.referrer)
 
-@app.route('/addTag/<wid>', methods=['POST'])
+@app.route('/addTag/<wid>', methods=['POST']) # FINISHED
 def addTag(wid):
 	if 'currUser' not in session:
 		return redirect('/login')
@@ -412,4 +437,23 @@ def removeWish(wid):
 		flash('Invalid') 
 
 	return redirect(request.referrer)
+
+@app.route('/addReview/<wid>', methods=['POST'])
+def addReview(wid):
+	if 'currUser' not in session:
+		return redirect('/login')
+	uid = session['currUser']
+	title = request.form['Title']
+	description = request.form['comment']
+	point = int(request.form['Point'])
+
+	try:
+		g.conn.execute('INSERT INTO Review(uid,wid,title,description,point) VALUES (\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')'% (uid,wid,title,description,point));
+	except:
+		flash('Invalid') 
+
+	return redirect(request.referrer)
+
+
+
 

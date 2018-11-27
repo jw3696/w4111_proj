@@ -30,9 +30,6 @@
       <h2><a href="/removeWish/{{wid}}">Remove this wine to my wish list</a></h2>
     {% endif %}
   {% endif %}
-  {% if log != '' %}
-    <h2><a href="/likeTag/{{wid}}">test like</a></h2>
-  {% endif %}
 
 
    <h2>Specifications: </h2>
@@ -42,28 +39,31 @@
 
 
   <h2>Tags: </h2>
-  {% for i in range(num2wine, num2tag) %}
-    {% if i in dataT %}
-      <input name="tag" id = 'id' value={{data[i]}} type="checkbox" onclick="check()" checked> #{{i - num2wine + 1}}: {{data[i]}}
-    {% else %}
-      <input name="tag" id = 'id' value={{data[i]}} onclick="check()" type="checkbox" > #{{i - num2wine + 1}}: {{data[i]}}
-    {% endif %}
-  {% endfor %}
+  {% if log != '' %}
+    <form method="POST" action="/updateTag/{{wid}}">
+      {% for i in range(num2wine, num2tag) %}
+        {% if i in dataT %}
+          <input name="tags" id = 'id' value={{data[i]}} type="checkbox" onclick="check()" checked> #{{i - num2wine + 1}}: {{data[i]}}
+        {% else %}
+          <input name="tags" id = 'id' value={{data[i]}} type="checkbox" > #{{i - num2wine + 1}}: {{data[i]}}
+        {% endif %}
+      {% endfor %}
+      <input type="submit" value="Update">
+    </form>
 
-  <!-- add tag-->
-  <form method="POST" action="/addOrLikeTag">
-    <p> Want to like a tag or add a new tag? 
-      <input type="text" name="new_tag" required/> 
-      <input type="submit" value="Like/Add">
-    </p>
-  </form>
+    <form method="POST" action="/addTag/{{wid}}">
+      <p> Want to add a new tag? 
+        <input type="text" name="new_tag" required/> 
+        <input type="submit" value="Add">
+      </p>
+    </form>
 
-  <form method="POST" action="/addTag/{{wid}}">
-    <p> Want to add a new tag? 
-      <input type="text" name="new_tag" required/> 
-      <input type="submit" value="Add">
-    </p>
-  </form>
+  {% else %}
+    {% for i in range(num2wine, num2tag) %}
+      <span> #{{i - num2wine + 1}}: {{data[i]}} </span>
+    {% endfor %}
+  {% endif %}
+
 
 
    <h2>Reviews: </h2>
@@ -75,30 +75,30 @@
       {% endif %}
   {% endfor %}
 
+  {% if log != '' %}
+  <form method="POST" action="/addReview/{{wid}}">
+      <h3> Add review: </h3>
+      <div>
+          <input type="text" name="Title" placeholder="Title" required/>
+          <input type="number" name="Point" min="0" max="100" placeholder="Pt." required/>
+      </div>
+      <div>
+          <textarea name="comment" rows=5 cols=40 placeholder="Enter your review"></textarea>
+      </div>
+      <input type="submit" value="Submit">
+  </form>
+  {% endif %}
+
 
 {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
 {% endif %}
+
 {% if log == '' %}
     <p><a href="/">Back to mainpage</a>  <a href="/search">Back to start a new search</a> <a href="javascript:history.back()">Back to previous page</a> </p>
 {% else %}
     <p><a href="/user/{{log}}">Back to my page</a>  <a href="/search">Back to start a new search</a>  <a href="javascript:history.back()">Back to previous page</a></p>
 {% endif %}
-
-<script type="text/javascript">
-  function check(){
-    var checkbox = document.getElementById('id');
-    alert(checkbox.checked)
-    if (checkbox.checked != true){
-      alert('unliked tag');
-      location.href = Flask.`/likeTag/${wid}`;
-    } else {
-      alert('liked tag')
-      location.href = Flask.`/likeTag/${wid}`
-    }
-  }
-
-</script>
 
 {% endblock %}
   
