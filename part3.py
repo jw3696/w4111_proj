@@ -353,7 +353,7 @@ def addWine():
 
 	return render_template("addWine.html")
 
-@app.route('/updateTag/<wid>', methods=['POST'])
+@app.route('/updateTag/<wid>', methods=['POST']) # FINISHED
 def updateTag(wid):
 	# check logged in and get uid
 	if 'currUser' not in session:
@@ -384,7 +384,7 @@ def updateTag(wid):
 	# return back to the original URL after finishing the action
 	return redirect(request.referrer)
 
-@app.route('/addTag/<wid>', methods=['POST'])
+@app.route('/addTag/<wid>', methods=['POST']) # FINISHED
 def addTag(wid):
 	if 'currUser' not in session:
 		return redirect('/login')
@@ -412,4 +412,23 @@ def addWish(wid):
 		flash('Invalid') 
 
 	return redirect(request.referrer)
+
+@app.route('/addReview/<wid>', methods=['POST'])
+def addReview(wid):
+	if 'currUser' not in session:
+		return redirect('/login')
+	uid = session['currUser']
+	title = request.form['Title']
+	description = request.form['comment']
+	point = int(request.form['Point'])
+
+	try:
+		g.conn.execute('INSERT INTO Review(uid,wid,title,description,point) VALUES (\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')'% (uid,wid,title,description,point));
+	except:
+		flash('Invalid') 
+
+	return redirect(request.referrer)
+
+
+
 

@@ -53,14 +53,13 @@
         <input type="submit" value="Add">
       </p>
     </form>
-    
+
   {% else %}
     {% for i in range(num2wine, num2tag) %}
       <span> #{{i - num2wine + 1}}: {{data[i]}} </span>
     {% endfor %}
   {% endif %}
 
-  
 
 
    <h2>Reviews: </h2>
@@ -72,30 +71,30 @@
       {% endif %}
   {% endfor %}
 
+  {% if log != '' %}
+  <form method="POST" action="/addReview/{{wid}}">
+      <h3> Add review: </h3>
+      <div>
+          <input type="text" name="Title" placeholder="Title" required/>
+          <input type="number" name="Point" min="0" max="100" placeholder="Pt." required/>
+      </div>
+      <div>
+          <textarea name="comment" rows=5 cols=40 placeholder="Enter your review"></textarea>
+      </div>
+      <input type="submit" value="Submit">
+  </form>
+  {% endif %}
+
 
 {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
 {% endif %}
+
 {% if log == '' %}
     <p><a href="/">Back to mainpage</a>  <a href="/search">Back to search page</a></p>
 {% else %}
     <p><a href="/user/{{log}}">Back to my page</a>  <a href="/search">Back to search page</a></p>
 {% endif %}
-
-<script type="text/javascript">
-  function check(){
-    var checkbox = document.getElementById('id');
-    alert(checkbox.checked)
-    if (checkbox.checked != true){
-      alert('unliked tag');
-      location.href = Flask.`/likeTag/${wid}`;
-    } else {
-      alert('liked tag')
-      location.href = Flask.`/likeTag/${wid}`
-    }
-  }
-
-</script>
 
 {% endblock %}
   
