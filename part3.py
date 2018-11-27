@@ -190,6 +190,13 @@ def wineInfo(wineid, methods=['POST']):
 			wineInfoString = "Vinyard: -\n"
 		wine.append(wineInfoString)
 
+		# price
+		if item['price'] is not None:
+			wineInfoString = "Price: " + str(item['price']) + "\n"
+		else:
+			wineInfoString = "Price: -\n"
+		wine.append(wineInfoString)
+
 	valid_wine.close()
 
 	# get average point
@@ -258,7 +265,7 @@ def wineInfo(wineid, methods=['POST']):
 
 	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context, wid = wineid, log=logedIn,addOrRemoveWish=addOrRemoveWish, **idx)
 
-@app.route('/search' , methods = ['GET','POST']) #FINISHED
+@app.route('/search' , methods = ['GET','POST']) #FINISHED # INJECTION CLEARED
 def search():
 	if request.method == 'POST':
 		info = {}
@@ -270,28 +277,32 @@ def search():
 		info['region2'] = request.form['region2']
 		info['vinyard'] = request.form['vinyard']
 
+		strings = ()
 		locQuery = "WHERE"
 		for key, val in info.items():
 			if val != '':
-				locQuery = locQuery + ' %s ~* \'%s\' AND'%(key,val)
+				locQuery = locQuery + ' ' + key + ' ~* %s AND'
+				strings = strings + (val,)
 
+		# remove the extra 'AND'
 		locQuery = locQuery[0:len(locQuery)-4]
 
 		query = 'WITH loc AS ( SELECT lid, country FROM Location %s )\
 				SELECT w.grapetype, w.wid, l.country \
 				FROM wine AS w \
 				JOIN loc AS l ON w.lid = l.lid'%(locQuery)
-		#print(query)
 
 		if grapetype != '':
-			query = query + " WHERE w.grapeType ~* \'" + grapetype + "\'"
+			query = query + " WHERE w.grapeType ~* %s"
+			strings = strings + (grapetype,)
 
 		query = query + " ORDER BY w.wid ASC"
 
-		#print("\n" + query + "\n")
+		print('\n\n\n' + query + '\n\n\n')
+		print(strings)
 
 		# execute the query
-		valid_wine = g.conn.execute(query)
+		valid_wine = g.conn.execute(query, strings)
 		wine = []
 		for item in valid_wine:
 			wineInfoString = 'Wine # %s'%(item['wid'])
@@ -311,14 +322,14 @@ def search():
 
 	return render_template("search.html")
 
-@app.route('/noWine') #FINISHED
+@app.route('/noWine') #FINISHED # INJECT CLEAR
 def noWine():
 	logedIn = ''
 	if 'currUser' in session:
 		logedIn = session['currUser']
 	return render_template("noWine.html", log = logedIn)
 
-@app.route('/addWine', methods = ['GET','POST']) # FINISHED
+@app.route('/addWine', methods = ['GET','POST']) # FINISHED # INJECT CLEAR
 def addWine():
 	if request.method == 'POST':
 		grapetype = request.form['grape_type']
@@ -331,23 +342,23 @@ def addWine():
 
 		try:
 			try:
-				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')' \
-				% (winery,country,province,region1,region2,vinyard));
+				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
+				, (winery,country,province,region1,region2,vinyard));
 				addLoc.close()
 			except sqlalchemy.exc.IntegrityError:
 				pass
 			
-			query = 'WHERE winery = \'%s\' AND country = \'%s\' AND province = \'%s\' AND region1 = \'%s\' AND region2 = \'%s\' AND vinyard = \'%s\'' \
-			%(winery,country,province,region1,region2,vinyard)
-			getId = g.conn.execute('SELECT lid FROM Location %s'%(query))
+			query = 'WHERE winery = \'%s\' AND country = \'%s\' AND province = \'%s\' AND region1 = \'%s\' AND region2 = \'%s\' AND vinyard = \'%s\''
+			query = 'SELECT lid FROM Location %s'%(query)
+			getId = g.conn.execute(query, (winery,country,province,region1,region2,vinyard))
 			lid = []
 			for result in getId:
 				lid.append(result['lid'])
 			getId.close()
 			lid = lid[0]
-			addW = g.conn.execute('INSERT INTO Wine(grapetype,lid) VALUES (\'%s\',\'%s\')'%(grapetype,lid))
+			addW = g.conn.execute('INSERT INTO Wine(grapetype,lid) VALUES (%s,%s)', (grapetype,lid))
 			addW.close()
-			wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = \'%s\' AND lid = \'%s\''%(grapetype,lid))
+			wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = %s', (grapetype,lid))
 			wid = []
 			for result in wineid:
 				wid.append(result['wid'])
@@ -363,7 +374,7 @@ def addWine():
 
 	return render_template("addWine.html")
 
-@app.route('/updateTag/<wid>', methods=['POST']) # FINISHED
+@app.route('/updateTag/<wid>', methods=['POST']) # FINISHED  # INJECT CLEAR
 def updateTag(wid):
 	# check logged in and get uid
 	if 'currUser' not in session:
@@ -372,7 +383,7 @@ def updateTag(wid):
 
 	old = []
 	try:
-		query = g.conn.execute('SELECT content FROM UserLikeTag WHERE uid = \'%s\' AND wid = \'%s\''%(uid,wid))
+		query = g.conn.execute('SELECT content FROM UserLikeTag WHERE uid = %s AND wid = %s', (uid,wid))
 		for ele in query:
 			old.append(ele['content'])
 		query.close()
@@ -384,17 +395,17 @@ def updateTag(wid):
 	for item in new:
 		if item not in old:
 			# add like tag
-			g.conn.execute('INSERT INTO UserLikeTag(content,uid,wid) VALUES (\'%s\',\'%s\',\'%s\')'% (item,uid,wid));
+			g.conn.execute('INSERT INTO UserLikeTag(content,uid,wid) VALUES (%s,%s,%s)', (item,uid,wid));
 
 	for item in old:
 		if item not in new:
 			# unlike tag
-			g.conn.execute('DELETE FROM UserLikeTag WHERE content = \'%s\' AND uid = \'%s\' AND wid = \'%s\''% (item,uid,wid));
+			g.conn.execute('DELETE FROM UserLikeTag WHERE content = %s AND uid = %s AND wid = %s', (item,uid,wid));
 
 	# return back to the original URL after finishing the action
 	return redirect(request.referrer)
 
-@app.route('/addTag/<wid>', methods=['POST']) # FINISHED
+@app.route('/addTag/<wid>', methods=['POST']) # FINISHED # INJECT CLEAR
 def addTag(wid):
 	if 'currUser' not in session:
 		return redirect('/login')
@@ -402,7 +413,7 @@ def addTag(wid):
 	tag = request.form['new_tag']
 
 	try:
-		g.conn.execute('INSERT INTO UserLikeTag(content,uid,wid) VALUES (\'%s\',\'%s\',\'%s\')'% (tag,uid,wid));
+		g.conn.execute('INSERT INTO UserLikeTag(content,uid,wid) VALUES (%s,%s,%s)', (tag,uid,wid));
 	except:
 		return redirect(request.referrer)
 		flash('Tag already existed') 
@@ -410,14 +421,14 @@ def addTag(wid):
 	# return back to the original URL after finishing the action
 	return redirect(request.referrer)
 
-@app.route('/addWish/<wid>') # FINISHED
+@app.route('/addWish/<wid>') # FINISHED # INJECT CLEAR
 def addWish(wid):
 	if 'currUser' not in session:
 		return redirect('/login')
 
 	uid = session['currUser']
 	try:
-		g.conn.execute('INSERT INTO UserWishWine(uid,wid) VALUES (\'%s\',\'%s\')'% (uid,wid));
+		g.conn.execute('INSERT INTO UserWishWine(uid,wid) VALUES (%s,%s)', (uid,wid));
 	except:
 		flash('Invalid') 
 
@@ -425,20 +436,20 @@ def addWish(wid):
 
 	return redirect(request.referrer)
 
-@app.route('/removeWish/<wid>') # FINISHED
+@app.route('/removeWish/<wid>') # FINISHED # INJECT CLEAR
 def removeWish(wid):
 	if 'currUser' not in session:
 		return redirect('/login')
 
 	uid = session['currUser']
 	try:
-		g.conn.execute('DELETE FROM UserWishWine WHERE uid =  \'%s\' AND wid = \'%s\''% (uid,wid));
+		g.conn.execute('DELETE FROM UserWishWine WHERE uid =  %s AND wid = %s', (uid,wid));
 	except:
 		flash('Invalid') 
 
 	return redirect(request.referrer)
 
-@app.route('/addReview/<wid>', methods=['POST'])
+@app.route('/addReview/<wid>', methods=['POST']) # INJECT CLEAR
 def addReview(wid):
 	if 'currUser' not in session:
 		return redirect('/login')
@@ -448,7 +459,7 @@ def addReview(wid):
 	point = int(request.form['Point'])
 
 	try:
-		g.conn.execute('INSERT INTO Review(uid,wid,title,description,point) VALUES (\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')'% (uid,wid,title,description,point));
+		g.conn.execute('INSERT INTO Review(uid,wid,title,description,point) VALUES (%s,%s,%s,%s,%s)', (uid,wid,title,description,point));
 	except:
 		flash('Invalid') 
 
