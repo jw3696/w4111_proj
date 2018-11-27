@@ -208,7 +208,7 @@ def wineInfo(wineid, methods=['POST']):
 	query = 'SELECT AVG(point) AS  avg FROM Review WHERE wid = %s;'
 	avg_point = g.conn.execute(query, (wineid,))
 	for item in avg_point:
-		wineInfoString = 'Average Rating: ' + str(round(item['avg'],2))
+		wineInfoString = 'Average Rating: ' + str(item['avg'])
 		wine.append(wineInfoString)
 	avg_point.close()
 	num2wine = len(wine)
@@ -290,7 +290,6 @@ def wineInfo(wineid, methods=['POST']):
 	idx = dict(dataT = uTag)
 
 	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context, wid = wineid, log=logedIn,addOrRemoveWish=addOrRemoveWish, **idx,**rev)
-
 @app.route('/search' , methods = ['GET','POST']) #FINISHED # INJECTION CLEARED
 def search():
 	if request.method == 'POST':
