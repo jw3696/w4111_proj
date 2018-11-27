@@ -350,42 +350,43 @@ def addWine():
 			#	info[k] = '\'%s\''%(v)
 
 		try:
-	 		try:
-				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)',(info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
+			try:
+				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)',
+					(info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
 				addLoc.close()
 			except sqlalchemy.exc.IntegrityError:
 				pass
-	 		
-	 		strings = ()
-	 		query = "WHERE "
-	 		for k,v in info.items():
-	 			if k!="price" and k!="grapetype":
-	 				if v == "NULL":
-	 					query = query + '%s IS NULL AND '
-	 					strings = strings + (k,)
-	 				else:
-	 					query = query + k + ' = %s AND '
-	 					strings = strings + (v,)
-	 		query = query[0:len(query)-4]
-	 		#print(query)
+			
+			strings = ()
+			query = "WHERE "
+			for k,v in info.items():
+				if k!="price" and k!="grapetype":
+					if v == "NULL":
+						query = query + '%s IS NULL AND '
+						strings = strings + (k,)
+					else:
+						query = query + k + ' = %s AND '
+						strings = strings + (v,)
+			query = query[0:len(query)-4]
+			#print(query)
 
-	 		getId = g.conn.execute('SELECT lid FROM Location %s'%(query), strings)
-	 		lid = []
-	 		for result in getId:
-	 			lid.append(result['lid'])
-	 		getId.close()
-	 		lid = lid[0]
-	 		addW = g.conn.execute('INSERT INTO Wine(grapetype,lid,price) VALUES (%s,%s,%s)', (info['grapetype'],lid,info['price']))
-	 		addW.close()
-	 		wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = %s', (info['grapetype'],lid))
-	 		wid = []
-	 		for result in wineid:
-	 			wid.append(result['wid'])
-	 		wineid.close()
-	 		wid = wid[0]
-	 	except:
- 			flash("Invalid Wine info")
- 			return redirect('/addWine')
+			getId = g.conn.execute('SELECT lid FROM Location %s'%(query), strings)
+			lid = []
+			for result in getId:
+				lid.append(result['lid'])
+			getId.close()
+			lid = lid[0]
+			addW = g.conn.execute('INSERT INTO Wine(grapetype,lid,price) VALUES (%s,%s,%s)', (info['grapetype'],lid,info['price']))
+			addW.close()
+			wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = %s', (info['grapetype'],lid))
+			wid = []
+			for result in wineid:
+				wid.append(result['wid'])
+			wineid.close()
+			wid = wid[0]
+		except:
+			flash("Invalid Wine info")
+			return redirect('/addWine')
 
 	return render_template("addWine.html")
 
