@@ -24,6 +24,8 @@ engine.execute("""INSERT INTO testUser(name,password) VALUES ('user','pass');"""
 engine.execute("""DELETE FROM Wine WHERE grapetype = 'testGrape';""")
 engine.execute("""DELETE FROM Location WHERE winery = 'testWinery';""")
 
+reviewDict = {}
+
 
 @app.before_request
 def before_request():
@@ -131,6 +133,12 @@ def logout():
 
 @app.route('/wineInfo/<wineid>')  # INJECTION CLEARED
 def wineInfo(wineid, methods=['POST']):
+	logedIn = ''
+	if 'currUser' in session:
+		logedIn = session['currUser']
+	global reviewDict
+	reviewDict = {}
+
 
 	query = "WITH onlyWine AS (SELECT * FROM wine WHERE wid = %s) "
 	query = query + "SELECT * FROM onlyWine AS o JOIN Location AS l ON l.lid = o.lid"
@@ -215,6 +223,17 @@ def wineInfo(wineid, methods=['POST']):
 	tags.close()
 	num2tag = len(wine)
 
+	#########added code###############
+	rid = []
+	try:
+		review = g.conn.execute('SELECT rid FROM Review WHERE uid = %s', (logedIn))
+		for item in review:
+			rid.append(item['rid'])
+	except:
+		print("no reviews yet")
+	myRev = []
+	##################################
+
 	# getting the review
 	query = 'WITH validReview AS (SELECT rid, uid, title, description, point FROM Review WHERE wid = %s)'
 	query = query + 'SELECT u.name, r.title, r.description, r.rid, r.point FROM validReview AS r JOIN WebUser AS u ON r.uid = u.uid'
@@ -226,6 +245,14 @@ def wineInfo(wineid, methods=['POST']):
 		wineInfoString = wineInfoString + 'Reviewer: ' + item['name'] + '     '
 		wineInfoString = wineInfoString + 'Point: ' + str(item['point']) + '/100'
 		wine.append(wineInfoString)
+
+		#########added code###############
+		if item['rid'] in rid:
+			myRev.append(wine.index(wineInfoString))
+			print(myRev)
+			reviewDict[str(wine.index(wineInfoString))] = item['rid']
+		##################################
+
 		wineInfoString = "Description: " + item['description']
 		wine.append(wineInfoString)
 		wineInfoString = "-"
@@ -233,34 +260,36 @@ def wineInfo(wineid, methods=['POST']):
 		index = index + 1
 	review_list.close()
 
+	#########added code###############
+	rev = dict(dataR = myRev)
+	##################################
+
 	context = dict(data = wine)
 
-	logedIn = ''
+	
 	addOrRemoveWish = ''
 	uTag = []
 	idx = {}
-	if 'currUser' in session:
-		logedIn = session['currUser']
 
-		try:
-			wishlist =[]
-			wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = %s AND wid = %s', (logedIn,wineid))
-			for item in wished:
-				wishlist.append(item['wid'])
-			if len(wishlist) == 0:
-				addOrRemoveWish = 'a'
-			wished.close()
-				
-			liked = g.conn.execute('SELECT content FROM UserLikeTag WHERE uid = %s AND wid = %s', (logedIn,wineid))
-			for item in liked:
-				uTag.append(wine.index(item['content']))
-			liked.close()
-			#idx = dict(dataT = uTag)
-		except:
-			print("no liked tags")
+	try:
+		wishlist =[]
+		wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = %s AND wid = %s', (logedIn,wineid))
+		for item in wished:
+			wishlist.append(item['wid'])
+		if len(wishlist) == 0:
+			addOrRemoveWish = 'a'
+		wished.close()
+			
+		liked = g.conn.execute('SELECT content FROM UserLikeTag WHERE uid = %s AND wid = %s', (logedIn,wineid))
+		for item in liked:
+			uTag.append(wine.index(item['content']))
+		liked.close()
+		#idx = dict(dataT = uTag)
+	except:
+		print("no liked tags")
 	idx = dict(dataT = uTag)
 
-	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context, wid = wineid, log=logedIn,addOrRemoveWish=addOrRemoveWish, **idx)
+	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context, wid = wineid, log=logedIn,addOrRemoveWish=addOrRemoveWish, **idx,**rev)
 
 @app.route('/search' , methods = ['GET','POST']) #FINISHED # INJECTION CLEARED
 def search():
@@ -478,6 +507,18 @@ def addReview(wid):
 		flash('Invalid') 
 
 	return redirect(request.referrer)
+
+@app.route('/removeReview/<idx>')
+def removeReview(idx):
+	print(reviewDict)
+	rid = reviewDict[idx]
+	try:
+		g.conn.execute('DELETE FROM Review WHERE rid = %s ', (rid));
+	except:
+		flash('Invalid') 
+
+	return redirect(request.referrer)
+
 
 if __name__ == "__main__":
 	import click

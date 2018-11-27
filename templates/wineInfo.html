@@ -2,7 +2,7 @@
 
 <html>
   <head>
-    <script src="http://stg.odnoklassniki.ru/share/odkl_share.js" type="text/javascript" ></script>
+    <link rel="icon" href="data:,">
   </head>
   <style>
     body{ 
@@ -65,13 +65,28 @@
   {% endif %}
 
    <h2>Reviews: </h2>
-  {% for i in range(num2tag, datalen) %}
+   {% if log != '' %}
+      {% for i in range(num2tag, datalen) %}
+        {% if loop.index is divisibleby 3 %}
+          <hr>
+        {% elif i in dataR%}
+          <div>
+            {{data[i]}} <a href="/removeReview/{{i}}"> Delete </a>
+          </div>
+        {% else %}
+          <div>{{data[i]}}</div>
+        {% endif %}
+      {% endfor %}
+  {% else %}
+    {% for i in range(num2tag, datalen) %}
       {% if loop.index is divisibleby 3 %}
         <hr>
       {% else %}
         <div>{{data[i]}}</div>
       {% endif %}
-  {% endfor %}
+    {% endfor %}
+  {% endif %}
+  
 
   {% if log != '' %}
   <form method="POST" action="/addReview/{{wid}}">
