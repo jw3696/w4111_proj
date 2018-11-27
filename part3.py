@@ -346,6 +346,7 @@ def addWine():
 		for k,v in info.items():
 			if v == '':
 				info[k] = 'NULL'
+<<<<<<< HEAD
 
 		try:
 			try:
@@ -385,6 +386,7 @@ def addWine():
 		except:
 			flash("Invalid Wine info")
 			return redirect('/addWine')
+
 
 	return render_template("addWine.html")
 
