@@ -12,7 +12,7 @@ DB_PASSWORD = "dp99rrq9"
 DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 DATABASEURI = "postgresql://"+DB_USER+":"+DB_PASSWORD+"@"+DB_SERVER+"/w4111"
 
-engine = create_engine(DATABASEURI)
+engine = create_engine(DATABASEURI,poolclass=NullPool)
 
 #engine.execute("""DROP TABLE IF EXISTS test;""")
 #engine.execute("""CREATE TABLE IF NOT EXISTS test ( id serial, name text UNIQUE );""")
@@ -326,6 +326,7 @@ def noWine():
 	logedIn = ''
 	if 'currUser' in session:
 		logedIn = session['currUser']
+		print(logedIn)
 	return render_template("noWine.html", log = logedIn)
 
 @app.route('/addWine', methods = ['GET','POST']) # FINISHED # INJECT CLEAR
@@ -344,9 +345,6 @@ def addWine():
 		for k,v in info.items():
 			if v == '':
 				info[k] = 'NULL'
-			# no need to do so as the execute will automatically include the ''
-			#elif k != 'price':
-			#	info[k] = '\'%s\''%(v)
 
 		try:
 			try:
@@ -479,6 +477,22 @@ def addReview(wid):
 		flash('Invalid') 
 
 	return redirect(request.referrer)
+
+if __name__ == "__main__":
+	import click
+
+	@click.command()
+	@click.option('--debug', is_flag=True)
+	@click.option('--threaded', is_flag=True)
+	@click.argument('HOST', default='0.0.0.0')
+	@click.argument('PORT', default=8111, type=int)
+
+	def run(debug, threaded, host, port):
+		HOST, PORT = host, port
+		print("running on %s:%d" % (HOST, PORT))
+		app.run(host=HOST, port=PORT, debug=debug, threaded=threaded)
+
+	run()
 
 
 
