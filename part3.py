@@ -342,32 +342,70 @@ def addWine():
 		info['vinyard'] = request.form['vinyard']
 		info['price'] = request.form['price']
 
+		addLocQueryStrings = ()
+		addLocQuery = 'INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES('
+		if(info['winery'] == ''):
+			addLocQuery = addLocQuery + ' NULL,'
+		else:
+			addLocQuery = addLocQuery + ' %s, '
+			addLocQueryStrings = addLocQueryStrings + (info['winery'],)
+		if(info['country'] == ''):
+			addLocQuery = addLocQuery + ' NULL,'
+		else:
+			addLocQuery = addLocQuery + ' %s, '
+			addLocQueryStrings = addLocQueryStrings + (info['country'],)
+		if(info['province'] == ''):
+			addLocQuery = addLocQuery + ' NULL,'
+		else:
+			addLocQuery = addLocQuery + ' %s, '
+			addLocQueryStrings = addLocQueryStrings + (info['province'],)
+		if(info['region1'] == ''):
+			addLocQuery = addLocQuery + ' NULL,'
+		else:
+			addLocQuery = addLocQuery + ' %s, '
+			addLocQueryStrings = addLocQueryStrings + (info['region1'],)
+		if(info['region2'] == ''):
+			addLocQuery = addLocQuery + ' NULL,'
+		else:
+			addLocQuery = addLocQuery + ' %s, '
+			addLocQueryStrings = addLocQueryStrings + (info['region2'],)
+		if(info['vinyard'] == ''):
+			addLocQuery = addLocQuery + ' NULL)'
+		else:
+			addLocQuery = addLocQuery + ' %s)'
+			addLocQueryStrings = addLocQueryStrings + (info['vinyard'],)
+
 		for k,v in info.items():
 			if v == '':
 				info[k] = 'NULL'
 
 		try:
 			try:
-				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)',
-					(info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
+				#addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)',
+				#	(info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
+				addLoc = g.conn.execute(addLocQuery, addLocQueryStrings)
 				addLoc.close()
 			except sqlalchemy.exc.IntegrityError:
 				pass
-			
+
 			strings = ()
 			query = "WHERE "
 			for k,v in info.items():
 				if k!="price" and k!="grapetype":
-					if v == "NULL":
-						query = query + '%s IS NULL AND '
-						strings = strings + (k,)
-					else:
-						query = query + k + ' = %s AND '
-						strings = strings + (v,)
-			query = query[0:len(query)-4]
-			#print(query)
 
-			getId = g.conn.execute('SELECT lid FROM Location %s'%(query), strings)
+					if v == "NULL":
+						query = query +  str(k) + ' IS NULL AND '
+					else:
+						query = query + str(k) + ' = %s AND '
+						strings = strings + (v,)
+
+			query = query[0:len(query)-4]
+
+			
+			query = 'SELECT lid FROM Location ' + query
+
+			getId = g.conn.execute(query, strings)
+
 			lid = []
 			for result in getId:
 				lid.append(result['lid'])
