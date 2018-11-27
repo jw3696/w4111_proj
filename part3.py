@@ -314,7 +314,10 @@ def search():
 		if len(wine) != 0:
 			return render_template("searchResult.html", **context)
 		else:
-			return render_template("noWine.html")
+			logedIn = ''
+			if 'currUser' in session:
+				logedIn = session['currUser']
+			return render_template("noWine.html", log = logedIn)
 
 
 	return render_template("search.html")
