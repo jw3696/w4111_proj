@@ -113,7 +113,7 @@ def user(uid):
 		name.append(user['name'])
 	username.close()
 
-	wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = %s',, (uid,))
+	wished = g.conn.execute('SELECT * FROM UserWishWine WHERE uid = %s', (uid,))
 	wine = []
 	for item in wished:
 		wine.append(item['wid'])
@@ -324,62 +324,63 @@ def noWine():
 	logedIn = ''
 	if 'currUser' in session:
 		logedIn = session['currUser']
+		print(logedIn)
 	return render_template("noWine.html", log = logedIn)
 
 @app.route('/addWine', methods = ['GET','POST']) # FINISHED # INJECT CLEAR
 def addWine():
 	if request.method == 'POST':
 		info = {}
- 		info['grapetype'] = request.form['grape_type']
- 		info['winery'] = request.form['winery']
- 		info['country'] = request.form['country']
- 		info['province'] = request.form['province']
- 		info['region1'] = request.form['region1']
- 		info['region2'] = request.form['region2']
- 		info['vinyard'] = request.form['vinyard']
- 		info['price'] = request.form['price']
+		info['grapetype'] = request.form['grape_type']
+		info['winery'] = request.form['winery']
+		info['country'] = request.form['country']
+		info['province'] = request.form['province']
+		info['region1'] = request.form['region1']
+		info['region2'] = request.form['region2']
+		info['vinyard'] = request.form['vinyard']
+		info['price'] = request.form['price']
 
- 		for k,v in info.items():
- 			if v == '':
- 				info[k] = 'NULL'
- 			elif k != 'price':
- 				info[k] = '\'%s\''%(v)
+		for k,v in info.items():
+			if v == '':
+				info[k] = 'NULL'
+			elif k != 'price':
+				info[k] = '\'%s\''%(v)
 
- 		try:
-	 		try:
-	 			addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
-	 			% (info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
-	 			addLoc.close()
-	 		except sqlalchemy.exc.IntegrityError:
-	 			pass
-	 		
-	 		query = "WHERE "
-	 		for k,v in info.items():
-	 			if k!="price" and k!="grapetype":
-	 				if v == "NULL":
-	 					query = query + '%s IS NULL AND '%(k)
-	 				else:
-	 					query = query + '%s = %s AND '%(k,v)
-	 		query = query[0:len(query)-4]
-	 		print(query)
+		try:
+			try:
+				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
+				% (info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
+				addLoc.close()
+			except sqlalchemy.exc.IntegrityError:
+				pass
+			
+			query = "WHERE "
+			for k,v in info.items():
+				if k!="price" and k!="grapetype":
+					if v == "NULL":
+						query = query + '%s IS NULL AND '%(k)
+					else:
+						query = query + '%s = %s AND '%(k,v)
+			query = query[0:len(query)-4]
+			print(query)
 
-	 		getId = g.conn.execute('SELECT lid FROM Location %s'%(query))
-	 		lid = []
-	 		for result in getId:
-	 			lid.append(result['lid'])
-	 		getId.close()
-	 		lid = lid[0]
-	 		addW = g.conn.execute('INSERT INTO Wine(grapetype,lid,price) VALUES (%s,\'%s\',%s)'%(info['grapetype'],lid,info['price']))
-	 		addW.close()
-	 		wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = \'%s\''%(info['grapetype'],lid))
-	 		wid = []
-	 		for result in wineid:
-	 			wid.append(result['wid'])
-	 		wineid.close()
-	 		wid = wid[0]
-	 	except:
- 			flash("Invalid Wine info")
- 			return redirect('/addWine')
+			getId = g.conn.execute('SELECT lid FROM Location %s'%(query))
+			lid = []
+			for result in getId:
+				lid.append(result['lid'])
+			getId.close()
+			lid = lid[0]
+			addW = g.conn.execute('INSERT INTO Wine(grapetype,lid,price) VALUES (%s,\'%s\',%s)'%(info['grapetype'],lid,info['price']))
+			addW.close()
+			wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = \'%s\''%(info['grapetype'],lid))
+			wid = []
+			for result in wineid:
+				wid.append(result['wid'])
+			wineid.close()
+			wid = wid[0]
+		except:
+			flash("Invalid Wine info")
+			return redirect('/addWine')
 
 	return render_template("addWine.html")
 
@@ -485,7 +486,7 @@ if __name__ == "__main__":
 
 	def run(debug, threaded, host, port):
 		HOST, PORT = host, port
-		print "running on %s:%d" % (HOST, PORT)
+		print("running on %s:%d" % (HOST, PORT))
 		app.run(host=HOST, port=PORT, debug=debug, threaded=threaded)
 
 	run()
