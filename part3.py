@@ -269,8 +269,6 @@ def search():
 def noWine():
 	return render_template("noWine.html")
 
-@app.route('/likeWine')
-
 
 @app.route('/addWineA', methods=['POST'])
 def addWineA():
@@ -355,7 +353,7 @@ def findWine():
 	if vinyard != '':
 		constaints.append('vinyard ~* \'' + vinyard + '\'')
 
-	# the with query 
+	# the with query
 	query = 'SELECT lid, country FROM Location'
 	if len(constaints) != 0:
 		query = query + ' WHERE'
