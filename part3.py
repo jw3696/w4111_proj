@@ -259,8 +259,7 @@ def wineInfo(wineid, methods=['POST']):
 		except:
 			print("no liked tags")
 	idx = dict(dataT = uTag)
-
-	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context, wid = wineid, log=logedIn,addOrRemoveWish=addOrRemoveWish, **idx)
+	return render_template("wineInfo.html", num2wine=num2wine, datalen=len(wine), num2tag=num2tag, **context, wid=wineid, log=logedIn, addOrRemoveWish=addOrRemoveWish, **idx)
 
 @app.route('/search' , methods = ['GET','POST']) #FINISHED # INJECTION CLEARED
 def search():
