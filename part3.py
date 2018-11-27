@@ -314,7 +314,10 @@ def search():
 		if len(wine) != 0:
 			return render_template("searchResult.html", **context)
 		else:
-			return render_template("noWine.html")
+			logedIn = ''
+			if 'currUser' in session:
+				logedIn = session['currUser']
+			return render_template("noWine.html", log = logedIn)
 
 
 	return render_template("search.html")
@@ -343,36 +346,37 @@ def addWine():
 		for k,v in info.items():
 			if v == '':
 				info[k] = 'NULL'
-			elif k != 'price':
-				info[k] = '\'%s\''%(v)
 
 		try:
 			try:
 				addLoc = g.conn.execute('INSERT INTO Location(winery,country,province,region1,region2,vinyard) VALUES (%s,%s,%s,%s,%s,%s)' \
-				% (info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
+				, (info['winery'],info['country'],info['province'],info['region1'],info['region2'],info['vinyard']));
 				addLoc.close()
 			except sqlalchemy.exc.IntegrityError:
 				pass
 			
+			strings = ()
 			query = "WHERE "
 			for k,v in info.items():
 				if k!="price" and k!="grapetype":
 					if v == "NULL":
-						query = query + '%s IS NULL AND '%(k)
+						query = query + '%s IS NULL AND '
+						strings = strings + (k,)
 					else:
-						query = query + '%s = %s AND '%(k,v)
+						query = query + k + ' = %s AND '
+						strings = strings + (v,)
 			query = query[0:len(query)-4]
-			print(query)
+			#print(query)
 
-			getId = g.conn.execute('SELECT lid FROM Location %s'%(query))
+			getId = g.conn.execute('SELECT lid FROM Location %s'%(query), strings)
 			lid = []
 			for result in getId:
 				lid.append(result['lid'])
 			getId.close()
 			lid = lid[0]
-			addW = g.conn.execute('INSERT INTO Wine(grapetype,lid,price) VALUES (%s,\'%s\',%s)'%(info['grapetype'],lid,info['price']))
+			addW = g.conn.execute('INSERT INTO Wine(grapetype,lid,price) VALUES (%s,%s,%s)', (info['grapetype'],lid,info['price']))
 			addW.close()
-			wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = \'%s\''%(info['grapetype'],lid))
+			wineid = g.conn.execute('SELECT wid FROM Wine WHERE grapetype = %s AND lid = %s', (info['grapetype'],lid))
 			wid = []
 			for result in wineid:
 				wid.append(result['wid'])
