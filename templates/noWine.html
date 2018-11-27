@@ -14,7 +14,11 @@
   <p><a href="/addWine">Add Wine</a></p>
 
   
-  <p><a href="/">Back to mainpage</a>  <a href="/search">Back to search page</a></p>
+  {% if log == '' %}
+      <p><a href="/">Back to mainpage</a>  <a href="/search">Back to search page</a></p>
+  {% else %}
+      <p><a href="/user/{{log}}">Back to my page</a>  <a href="/search">Back to search page</a></p>
+  {% endif %}
 
 
 </body>

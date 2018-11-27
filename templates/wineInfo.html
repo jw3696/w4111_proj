@@ -1,6 +1,9 @@
 {% extends "layout.html" %}
 
 <html>
+  <head>
+    <script src="http://stg.odnoklassniki.ru/share/odkl_share.js" type="text/javascript" ></script>
+  </head>
   <style>
     body{ 
       font-size: 15pt;
@@ -17,9 +20,16 @@
     } 
   </style>
 
+
 {% block body %}
   <h1>Here is the info of the wine...</h1>
-  <h2><a href="/addWish">Add this wine to my wish list</a></h2>
+  {% if log != '' %}
+    <h2><a href="/addWish/{{wid}}">Add this wine to my wish list</a></h2>
+  {% endif %}
+  {% if log != '' %}
+    <h2><a href="/likeTag/{{wid}}">test like</a></h2>
+  {% endif %}
+
 
    <h2>Specifications: </h2>
    {% for i in range(0, num2wine) %}
@@ -29,14 +39,25 @@
 
   <h2>Tags: </h2>
   {% for i in range(num2wine, num2tag) %}
-      #{{i - num2wine + 1}}: {{data[i]}}
-   {% endfor %}
+    {% if i in dataT %}
+      <input name="tag" id = 'id' value={{data[i]}} type="checkbox" onclick="check()" checked> #{{i - num2wine + 1}}: {{data[i]}}
+    {% else %}
+      <input name="tag" id = 'id' value={{data[i]}} onclick="check()" type="checkbox" > #{{i - num2wine + 1}}: {{data[i]}}
+    {% endif %}
+  {% endfor %}
 
   <!-- add tag-->
   <form method="POST" action="/addOrLikeTag">
     <p> Want to like a tag or add a new tag? 
       <input type="text" name="new_tag" required/> 
       <input type="submit" value="Like/Add">
+    </p>
+  </form>
+
+  <form method="POST" action="/addTag/{{wid}}">
+    <p> Want to add a new tag? 
+      <input type="text" name="new_tag" required/> 
+      <input type="submit" value="Add">
     </p>
   </form>
 
@@ -54,7 +75,27 @@
 {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
 {% endif %}
+{% if log == '' %}
     <p><a href="/">Back to mainpage</a>  <a href="/search">Back to search page</a></p>
+{% else %}
+    <p><a href="/user/{{log}}">Back to my page</a>  <a href="/search">Back to search page</a></p>
+{% endif %}
+
+<script type="text/javascript">
+  function check(){
+    var checkbox = document.getElementById('id');
+    alert(checkbox.checked)
+    if (checkbox.checked != true){
+      alert('unliked tag');
+      location.href = Flask.`/likeTag/${wid}`;
+    } else {
+      alert('liked tag')
+      location.href = Flask.`/likeTag/${wid}`
+    }
+  }
+
+</script>
+
 {% endblock %}
   
 </html>
