@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sign up</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Karma">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body,h1,h2,h3,h4,h5,h6,.w3-wide {font-family: "Montserrat", sans-serif; color: #6b0848;}
+        
+        input[type=text], input[type=password], input[type=number] {
+          width: 80%;
+          padding: 15px;
+          margin: 5px 0 22px 0;
+          display: inline-block;
+          border: none;
+          background: #dfd3d3;
+        }
+    </style>
+
+  </head>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+<body bgcolor="#F5EEE6">
+{% block body %}
+  <h1 align="center">Please enter wine info</h1>
+
+{% if error %}
+    <p class=error><strong>Error:</strong> {{ error }}
+{% endif %}
+
+<form method="POST" action="/addWine" align="center">
+	<table style="width:50%" class="w3-center" align="center">
+      <tr>
+        <td>Grape type:</td>
+        <td><input type="text" name="grape_type" required/> </td>
+      </tr>
+
+      <tr>
+        <td>Winery:</td>
+        <td><input type="text" name="winery"></td>
+      </tr>
+
+      <tr>
+        <td>Country:</td>
+        <td><input type="text" name="country"></td>
+      </tr>
+
+      <tr>
+        <td>Province:</td>
+        <td><input type="text" name="province"></td>
+      </tr>
+
+      <tr>
+        <td>Sub-region 1:</td>
+        <td><input type="text" name="region1"></td>
+      </tr>
+
+      <tr>
+        <td>Sub-region 2:</td>
+        <td><input type="text" name="region2"></td>
+      </tr>
+
+      <tr>
+        <td>Vinyard:</td>
+        <td><input type="text" name="vinyard"></td>
+      </tr>
+
+      <tr>
+        <td>Price:</td>
+        <td><input type="number" name="price" required/></td>
+      </tr>
+    </table>
+
+<input type="submit" value="Add" width="100px"></p>
+</form>
+
+<div align="center">
+    <a href="javascript:history.back()">Back to Previous Page</a>
+</div>
+
+
+{% endblock %}
+</body>
+</html>
+

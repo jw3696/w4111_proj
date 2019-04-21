@@ -1,0 +1,65 @@
+<!DOCTYPE html>   
+<html lang="en">   
+<head>   
+  <meta charset="utf-8">   
+  <title>Search Result</title>   
+  <meta name="description" content="Bootstrap.">  
+  <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">   
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="http://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css"></style>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script type="text/javascript" src="http://cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+  <style>
+      body,h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif; color: #6b0848; }
+  </style>
+</head> 
+
+<body style="margin:20px auto" bgcolor="#F5EEE6">  
+  <div class="container">
+    <div class="row header">
+      <h1>Here's a list of wines you asked for...</h1>
+    </div>
+    <table id="myTable" class="w3-center" align="center" >  
+      <thead>  
+        <tr>  
+          <th>Image</th>
+          <th>Wine ID</th>  
+          <th>Wine name</th>  
+          <th>Country</th> 
+          <th>Details</th> 
+        </tr>  
+      </thead>  
+      <tbody>  
+        {% for item in data %}
+          <tr>  
+            <td><img src="/static/wineImage.png" alt="Wine Image" height="50" width="50"></td>  
+            <td>Wine #{{item[0]}}</td>  
+            <td>{{item[1]}}</td>  
+            <td>{{item[2]}}</td> 
+            <td><a href="/wineInfo/{{item[0]}}">Details</a></td> 
+          </tr>  
+        {% endfor %} 
+      </tbody>  
+    </table> 
+
+    <div align="center" >
+      <p> Didn't find what you are looking for? <a href="/addWine">Add Wine</a> </p>
+      <a href="javascript:history.back()">Back to Previous Page</a>
+    </div> 
+  </div>
+</body>
+
+<script>
+$(document).ready(function() {
+    $('#myTable').DataTable( {
+        responsive: true,
+        "pageLength": 10
+    } );
+} );
+</script>
+</html>  

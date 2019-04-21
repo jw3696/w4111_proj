@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Winery</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Karma">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css">
+    <style>
+      body,h1,h2,h3,h4,h5,h6.w3-wide {font-family: "Montserrat", sans-serif; color: #6b0848; padding-left: 25px; padding-right: 25px;}
+    </style>
+  </head>
+
+
+<body bgcolor="#F5EEE6">
+  <div align="center">
+    <h1>We are sorry but we do not find that wine.</h1>
+    <h2>Do you want to add one?</h2>
+    <h2><a href="/addWine">Add Wine</a></h2>
+    {% if log == '' %}
+      <p><a href="/">Back to mainpage</a>  <a href="/search">Back to search page</a></p>
+    {% else %}
+        <p><a href="/user/{{log}}">Back to my page</a>  <a href="/search">Back to search page</a></p>
+    {% endif %}
+  </div>
+
+</body>
+
+</html>

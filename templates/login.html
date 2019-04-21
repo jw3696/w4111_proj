@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Sign up</title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Karma">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<style>
+		    body,h1,h2,h3,h4,h5,h6,.w3-wide {font-family: "Montserrat", sans-serif;}
+		    th, td {
+		        border-bottom: 1px solid #ddd;
+		    }
+		    input[type=text], input[type=password] {
+				width: 30%;
+				padding: 15px;
+				margin: 5px 0 22px 0;
+				display: inline-block;
+				border: none;
+				background: #dfd3d3;
+			}
+			button{
+				margin: 0 auto;
+			}
+		</style>
+
+	</head>
+
+<body bgcolor="#F5EEE6"></body>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+{% block body %}
+ <h1 align="center">Please enter you user name and password</h1>
+
+{% if error %}
+    <p class=error><strong>Error:</strong> {{ error }}
+{% endif %}
+
+<form method="POST" action="/login" align="center">
+	<input type="text" name="uid" placeholder="UserID" required/> <br>
+	<input type="password" name="psw" placeholder="Password" required/> <br>
+	<input type="submit" value="Log in"></p>
+</form>
+
+<div align="center" >
+	<p> Didn't have an account? <a href="/signup">Sign Up</a> </p>
+	<a href="/"><font color="#dfd3d3">Back to HomePage</font></a>
+</div>
+
+{% endblock %}
+
+
+</html>

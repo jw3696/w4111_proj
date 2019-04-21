@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Winery</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Karma">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css">
+    <style>
+      body,h1,h2,h3,h4,h5,h6.w3-wide {font-family: "Montserrat", sans-serif; color: #6b0848; padding-left: 25px; padding-right: 25px;}
+    </style>
+  </head>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  {% block body %}
+  <body bgcolor="#F5EEE6">
+    {% if log != '' %}
+      <p class="w3-top" align="right" style="padding-right: 50px;"> <a href="/logout">Log out </a></p>
+    {% else %}
+      <p class="w3-top" align="right" style="padding-right: 50px;"> <a href="/login"> Login </a></p>
+    {% endif %}
+
+    <div style="padding-top: 25px;">
+      <h1>Introducing {{data[0]}}</h1>
+    </div>
+    
+
+    <!-- <h3>Wine Card: </h3> -->
+    <table align="center" cellpadding="10">
+      <tr>
+        <td><img src="/static/wineImage.png" alt="Wine Image" height="220" width="220"></td>
+        <td>
+          {% for i in range(1, num2wine) %}
+            <div>{{data[i]}}</div>
+          {% endfor %}
+        </td>
+      </tr>
+    </table>
+
+    <div align="center">
+      {% if log != '' %}
+        {% if addOrRemoveWish !='' %}
+          <h4><a href="/addWish/{{wid}}"> ❤️ Add this wine to my wish list</a></h4>
+        {% else %}
+          <h4><a href="/removeWish/{{wid}}"> 💔 Remove this wine from my wish list</a></h4>
+        {% endif %}
+      {% endif %}
+    </div>
+  
+    <br>
+    <!-- like tags -->
+    {% if log != '' %}
+      <form id="likeTag" method="POST" action="/updateTag/{{wid}}">
+        {% for i in range(num2wine, num2tag) %}
+          {% if i in dataT %}
+            <input name="tags" id = 'id' value={{data[i]}} type="checkbox" onclick="check()" checked><font size="+1"> #{{data[i]}} &nbsp</font> 
+          {% else %}
+            <input name="tags" id = 'id' value={{data[i]}} type="checkbox" > <font size="+1">#{{data[i]}} &nbsp</font>
+          {% endif %}
+        {% endfor %}
+        <!-- <input type="submit" value="Update"> -->
+      </form>
+
+      <form method="POST" action="/addTag/{{wid}}">
+        <p> Want to add a new tag? 
+          <input type="text" name="new_tag" required/> 
+          <input type="submit" value="Add">
+        </p>
+      </form>
+
+    {% else %}
+      {% for i in range(num2wine, num2tag) %}
+        <font size="+1">#{{data[i]}} &nbsp</font>
+      {% endfor %}
+    {% endif %}
+
+   <h3 align="center">Reviews: </h3>
+   <table>
+   {% if log != '' %}
+      {% for i in range(num2tag, datalen) %}
+        {% if loop.index is divisibleby 3 %}
+          <!-- do nothing -->
+        {% elif (loop.index-1) is divisibleby 3 and i in dataR%}
+          <tr>
+            <td width="15%"  class="w3-center" style="border-bottom: 1px solid #6b0848;">
+              <img src="/static/user.png" alt="user profile image" height="50" width="50">
+              <p>{{data[i][0]}}</p>
+              <p>{{data[i][1]}}</p>
+            </td>
+            <td width="85%" style="border-bottom: 1px solid #6b0848;">
+              <p>{{data[i+1]}}</p>
+              <a href="/removeReview/{{i}}"> Delete </a>
+            </td>
+          </tr>
+          <!-- <div>
+            {{data[i]}} <a href="/removeReview/{{i}}"> Delete </a>
+          </div> -->
+        {% elif (loop.index-1) is divisibleby 3%}
+          <tr >
+            <td width="15%"  class="w3-center" style="border-bottom: 1px solid #6b0848;">
+              <img src="/static/user.png" alt="user profile image" height="50" width="50">
+              <p>{{data[i][0]}}</p>
+              <p>{{data[i][1]}}</p>
+            </td>
+            <td width="85%" style="border-bottom: 1px solid #6b0848;">
+              <p>{{data[i+1]}}</p>
+            </td>
+          </tr>
+        {% else %}
+          <!-- do nothing -->
+        {% endif %}
+      {% endfor %}
+  {% else %}
+    {% for i in range(num2tag, datalen) %}
+      {% if (loop.index-1) is divisibleby 3 %}
+        <tr>
+          <td width="15%"  class="w3-center" style="border-bottom: 1px solid #6b0848;">
+            <img src="/static/user.png" alt="user profile image" height="50" width="50">
+            <p>{{data[i][0]}}</p>
+            <p>{{data[i][1]}}</p>
+          </td>
+          <td width="85%" style="border-bottom: 1px solid #6b0848;">
+            <p>{{data[i+1]}}</p>
+          </td>
+        </tr>
+      {% else %}
+        <!-- do nothing -->
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  </table>
+  
+
+  {% if log != '' %}
+  <form method="POST" action="/addReview/{{wid}}" class="w3-center">
+      <h3> Add your review: </h3>
+      <div>
+          <input type="text" name="Title" placeholder="Title" required/>
+          <input type="number" name="Point" min="0" max="100" placeholder="Pt." required/>
+      </div>
+      <br>
+      <div>
+          <textarea name="comment" rows=5 cols=30 placeholder="Enter your review"></textarea>
+      </div>
+      <input type="submit" value="Submit">
+  </form>
+  {% endif %}
+
+
+{% if error %}
+    <p class=error><strong>Error:</strong> {{ error }}
+{% endif %}
+
+{% if log == '' %}
+    <h6> Log in to leave your reviews </h6>
+    <p><a href="/">Back to mainpage</a> &nbsp <a href="/search">Back to start a new search</a> &nbsp<a href="javascript:history.back()">Back to previous page</a> </p>
+{% else %}
+    <p><a href="/user/{{log}}">Back to my page</a> &nbsp <a href="/search">Back to start a new search</a> &nbsp <a href="javascript:history.back()">Back to previous page</a></p>
+{% endif %}
+
+{% endblock %}
+</body>
+
+<script type="text/javascript">
+    $('#likeTag').change(function() {
+      this.submit();
+    } );
+</script>
+  
+</html>

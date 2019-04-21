@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Winery</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Karma">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+      body,h1,h2,h3,h4,h5,h6.w3-wide {font-family: "Montserrat", sans-serif; color: #6b0848; }
+      th, td {
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #e6a4b4;
+      }
+      tr:hover {background-color: #e6a4b4;}
+    </style>
+    
+  </head>
+    
+
+  <body bgcolor="#F5EEE6">
+    <p class="w3-top" align="right" style=" padding-right: 25px;"><a href="/signup">Sign Up</a>    <a href="/login">Login</a></p>
+
+    <div align="center"  style="height:250px; padding-top: 25px;">
+      <h1  class="w3-center w3-padding-16" >Welcome to the Winery</h1>
+      <p class="w3-center w3-padding-16" >This is a place where you learn about and share your favorite wine. </p>
+    </div>
+
+    <br>
+    <div align="center">Below are the 10 most popular winery-grape pair in our website.</div>
+    <br>
+
+    <table style="width:50%" class="w3-center" align="center" bgcolor="f3d7ca">
+      <thead>
+        <th>Image</th>
+        <th>Winery</th>
+        <th>Grape</th>
+        <th>Details</th> 
+      </thead>
+
+      {% for item in data %}
+        <tr>
+          <td><img src="/static/wineImage.png" alt="Wine Image" height="100" width="100"></td>
+          <td>{{item[0]}}</td>
+          <td>{{item[1]}}</td> 
+          <td><a href="/wineInfo/{{item[2]}}">Details</a></td> 
+        </tr>
+      {% endfor %}
+
+    </table>
+
+    <p align="center"> Want to explore more wines? <a href="/search">Search Wine</a></p>
+
+    <p align="center"> Did not find what you want? <a href="/addWine">Add Wine</a></p>
+
+    
+
+
+  </body>
+
+
+</html>
